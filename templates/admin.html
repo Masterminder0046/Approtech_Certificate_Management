@@ -1,0 +1,1158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Approtech - Internship Certificate Management System</title>
+  <meta name="description" content="Admin management dashboard for Approtech internship certificate batches, reviews, approvals, and QR generation." />
+
+  <!-- Font Awesome 6.7.2 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous" />
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body style="background: var(--background);">
+
+  <!-- Canvas Background Overlay -->
+  <div class="bg-grid-overlay" aria-hidden="true"></div>
+  <div class="bg-blob blob-1" aria-hidden="true"></div>
+  <div class="bg-blob blob-2" aria-hidden="true"></div>
+
+  <div class="admin-wrapper">
+    
+    <!-- Top Navigation Bar -->
+    <header class="admin-top-nav">
+      <div class="admin-brand">
+        <img src="/assets/approtech-logo.png" alt="Approtech Logo" />
+        <div class="admin-brand-info">
+          <h1>APPROTECH</h1>
+          <p>Internship Certificate Management System</p>
+        </div>
+      </div>
+
+      <div class="admin-nav-actions">
+        <div class="admin-tabs">
+          <button type="button" class="admin-tab-btn active" id="tab-btn-batches" onclick="switchTab('batches')">
+            <i class="fa-solid fa-layer-group"></i> Batches
+            <span class="badge-counter" id="badge-batches-count">1</span>
+          </button>
+          <button type="button" class="admin-tab-btn" id="tab-btn-students" onclick="switchTab('students')">
+            <i class="fa-solid fa-users"></i> Student Submissions
+            <span class="badge-counter amber" id="badge-pending-count">0</span>
+          </button>
+          <button type="button" class="admin-tab-btn" id="tab-btn-email" onclick="openEmailModal()">
+            <i class="fa-solid fa-envelope"></i> Email Settings
+          </button>
+        </div>
+
+        <a href="/student-form/APP26-27" target="_blank" class="btn-primary" style="text-decoration:none; padding: 8px 16px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px;">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Student Portal
+        </a>
+      </div>
+    </header>
+
+    <!-- Global Stats Overview Cards -->
+    <section class="admin-stats-grid" id="stats-overview">
+      <div class="stat-card">
+        <div class="stat-icon blue">
+          <i class="fa-solid fa-folder-tree"></i>
+        </div>
+        <div class="stat-meta">
+          <div class="stat-label">Total Batches</div>
+          <div class="stat-value" id="stat-total-batches">1</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon cyan">
+          <i class="fa-solid fa-user-group"></i>
+        </div>
+        <div class="stat-meta">
+          <div class="stat-label">Total Submissions</div>
+          <div class="stat-value" id="stat-total-students">0</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon amber">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+        </div>
+        <div class="stat-meta">
+          <div class="stat-label">Pending Review</div>
+          <div class="stat-value" id="stat-pending-reviews">0</div>
+        </div>
+      </div>
+
+      <div class="stat-card">
+        <div class="stat-icon green">
+          <i class="fa-solid fa-certificate"></i>
+        </div>
+        <div class="stat-meta">
+          <div class="stat-label">Certificates Issued</div>
+          <div class="stat-value" id="stat-certificates-issued">0</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 1: BATCHES VIEW -->
+    <section id="view-batches" class="tab-content">
+      <div class="section-header-row">
+        <div class="section-heading-group">
+          <h2>Internship Batches</h2>
+          <p>Manage student registration cohorts and public submission links.</p>
+        </div>
+        <button type="button" class="btn-primary" onclick="openCreateBatchModal()">
+          <i class="fa-solid fa-plus"></i> Create New Batch
+        </button>
+      </div>
+
+      <!-- Batches Grid -->
+      <div class="batches-grid" id="batches-grid-container">
+        <!-- Rendered via JavaScript -->
+      </div>
+    </section>
+
+    <!-- TAB 2: STUDENT SUBMISSIONS VIEW -->
+    <section id="view-students" class="tab-content" style="display: none;">
+      <div class="section-header-row">
+        <div class="section-heading-group">
+          <h2>Student Submissions</h2>
+          <p>Review student records, approve submissions, and generate verifiable certificates.</p>
+        </div>
+        <div>
+          <button type="button" class="btn-secondary btn-refresh" id="btn-refresh-students" onclick="refreshStudentData()">
+            <i class="fa-solid fa-arrows-rotate"></i> Refresh Records
+          </button>
+        </div>
+      </div>
+
+      <!-- Filter and Search Bar -->
+      <div class="table-filter-bar">
+        <div class="filter-left-group">
+          <!-- Batch Selector Dropdown -->
+          <div class="select-wrapper" style="min-width: 200px;">
+            <select id="batch-filter-select" class="form-select" onchange="onBatchSelectChange()" style="padding: 8px 12px; font-size: 0.85rem; height: 38px;">
+              <!-- Populated dynamically -->
+            </select>
+            <i class="fa-solid fa-chevron-down select-chevron"></i>
+          </div>
+
+          <!-- Status Filter Pills -->
+          <div class="filter-pills">
+            <button type="button" class="filter-pill active" data-status="All" onclick="setStatusFilter('All', this)">All</button>
+            <button type="button" class="filter-pill" data-status="Pending" onclick="setStatusFilter('Pending', this)">Pending</button>
+            <button type="button" class="filter-pill" data-status="Approved" onclick="setStatusFilter('Approved', this)">Approved</button>
+            <button type="button" class="filter-pill" data-status="Certificate Generated" onclick="setStatusFilter('Certificate Generated', this)">Generated</button>
+          </div>
+        </div>
+
+        <!-- Search Input -->
+        <div class="filter-search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="student-search-input" placeholder="Search by name, reg no, college..." oninput="handleSearchInput()" />
+        </div>
+      </div>
+
+      <!-- Data Table -->
+      <div class="data-table-container">
+        <table class="data-table" id="students-table">
+          <thead>
+            <tr>
+              <th>STUDENT & DETAILS</th>
+              <th>COLLEGE & BRANCH</th>
+              <th>DOMAIN & MODE</th>
+              <th>PROJECT TITLE</th>
+              <th>STATUS & CERT ID</th>
+              <th style="text-align: right;">ACTIONS</th>
+            </tr>
+          </thead>
+          <tbody id="students-table-body">
+            <!-- Populated via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ======================================================================== -->
+  <!-- MODALS -->
+  <!-- ======================================================================== -->
+
+  <!-- 1. VIEW STUDENT MODAL -->
+  <div class="admin-modal-overlay hidden" id="modal-view-student">
+    <div class="admin-modal-dialog">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title">
+          <i class="fa-solid fa-address-card text-accent"></i>
+          <span>Student Submission Details</span>
+        </div>
+        <button type="button" class="admin-modal-close" onclick="closeModal('modal-view-student')">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="admin-modal-body" id="view-student-modal-body">
+        <!-- Rendered via JS -->
+      </div>
+
+      <div class="admin-modal-footer">
+        <button type="button" class="btn-secondary" onclick="closeModal('modal-view-student')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. EDIT STUDENT MODAL -->
+  <div class="admin-modal-overlay hidden" id="modal-edit-student">
+    <div class="admin-modal-dialog modal-xl">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title">
+          <i class="fa-solid fa-user-pen text-accent"></i>
+          <span>Edit Student Record</span>
+        </div>
+        <button type="button" class="admin-modal-close" onclick="closeModal('modal-edit-student')">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="edit-student-form" onsubmit="saveStudentEdit(event)">
+        <input type="hidden" id="edit-student-id" />
+
+        <div class="admin-modal-body">
+          <div class="form-grid">
+            <div class="form-group col-span-6">
+              <label class="form-label">Full Name *</label>
+              <input type="text" id="edit-fullName" class="form-input" required />
+            </div>
+
+            <div class="form-group col-span-6">
+              <label class="form-label">Register Number *</label>
+              <input type="text" id="edit-registerNo" class="form-input" required />
+            </div>
+
+            <div class="form-group col-span-6">
+              <label class="form-label">Email Address *</label>
+              <input type="email" id="edit-email" class="form-input" required />
+            </div>
+
+            <div class="form-group col-span-6">
+              <label class="form-label">Phone Number *</label>
+              <input type="tel" id="edit-phone" class="form-input" required />
+            </div>
+
+            <div class="form-group col-span-12">
+              <label class="form-label">College Name *</label>
+              <input type="text" id="edit-collegeName" class="form-input" required />
+            </div>
+
+            <div class="form-group col-span-6">
+              <label class="form-label">Degree & Branch *</label>
+              <input type="text" id="edit-degreeBranch" class="form-input" required />
+            </div>
+
+            <div class="form-group col-span-6">
+              <label class="form-label">State *</label>
+              <select id="edit-state" class="form-select" required>
+                <option value="Tamil Nadu">Tamil Nadu</option>
+                <option value="Karnataka">Karnataka</option>
+                <option value="Kerala">Kerala</option>
+                <option value="Andhra Pradesh">Andhra Pradesh</option>
+                <option value="Telangana">Telangana</option>
+                <option value="Maharashtra">Maharashtra</option>
+                <option value="Delhi">Delhi</option>
+                <option value="Uttar Pradesh">Uttar Pradesh</option>
+                <option value="Gujarat">Gujarat</option>
+                <option value="West Bengal">West Bengal</option>
+                <option value="Rajasthan">Rajasthan</option>
+                <option value="Madhya Pradesh">Madhya Pradesh</option>
+                <option value="Bihar">Bihar</option>
+                <option value="Punjab">Punjab</option>
+                <option value="Haryana">Haryana</option>
+                <option value="Odisha">Odisha</option>
+                <option value="Assam">Assam</option>
+                <option value="Goa">Goa</option>
+              </select>
+            </div>
+
+            <div class="form-group col-span-6">
+              <label class="form-label">Domain *</label>
+              <select id="edit-domain" class="form-select" required>
+                <option value="Full Stack Development (Java)">Full Stack Development (Java)</option>
+                <option value="Full Stack Development (MERN)">Full Stack Development (MERN)</option>
+                <option value="Full Stack Development (Python)">Full Stack Development (Python)</option>
+                <option value="Frontend Web Development">Frontend Web Development</option>
+                <option value="Backend Engineering & Cloud">Backend Engineering & Cloud</option>
+                <option value="Data Science & Machine Learning">Data Science & Machine Learning</option>
+                <option value="Artificial Intelligence & NLP">Artificial Intelligence & NLP</option>
+                <option value="UI/UX Design & Product Strategy">UI/UX Design & Product Strategy</option>
+                <option value="Mobile App Development (Flutter/React Native)">Mobile App Development (Flutter/React Native)</option>
+                <option value="Cybersecurity & Ethical Hacking">Cybersecurity & Ethical Hacking</option>
+                <option value="DevOps & Cloud Architecture">DevOps & Cloud Architecture</option>
+              </select>
+            </div>
+
+            <div class="form-group col-span-6">
+              <label class="form-label">Internship Mode *</label>
+              <select id="edit-mode" class="form-select" required>
+                <option value="Online">Online</option>
+                <option value="Offline">Offline</option>
+              </select>
+            </div>
+
+            <div class="form-group col-span-6">
+              <label class="form-label">Start Date *</label>
+              <input type="date" id="edit-startDate" class="form-input" required />
+            </div>
+
+            <div class="form-group col-span-6">
+              <label class="form-label">End Date *</label>
+              <input type="date" id="edit-endDate" class="form-input" required />
+            </div>
+
+            <div class="form-group col-span-12">
+              <label class="form-label">Project Title *</label>
+              <input type="text" id="edit-projectTitle" class="form-input" required />
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modal-edit-student')">Cancel</button>
+          <button type="submit" class="btn-primary" id="btn-save-edit">
+            <i class="fa-solid fa-floppy-disk"></i> Save Changes
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 3. CERTIFICATE PREVIEW & PRINT MODAL (PDF-MATCHING PORTRAIT LAYOUT) -->
+  <div class="admin-modal-overlay hidden" id="modal-certificate">
+    <div class="admin-modal-dialog modal-xl cert-dialog">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title">
+          <i class="fa-solid fa-certificate text-accent"></i>
+          <span>Official Approtech Certificate (Document Preview)</span>
+        </div>
+        <button type="button" class="admin-modal-close" onclick="closeModal('modal-certificate')">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="admin-modal-body cert-modal-scroll-body">
+        <div class="cert-print-wrapper" id="certificate-print-area">
+          <div class="pdf-certificate-sheet">
+            <!-- Title -->
+            <div class="pdf-cert-title">CERTIFICATE OF COMPLETION</div>
+
+            <!-- Certificate ID -->
+            <div class="pdf-cert-id" id="cert-view-id">INT:APP26-27/2279-4644</div>
+
+            <!-- Heading -->
+            <div class="pdf-cert-concern">TO WHOMSOEVER IT MAY CONCERN</div>
+            <div class="pdf-cert-underline"></div>
+
+            <!-- Body Paragraph 1 -->
+            <p class="pdf-cert-paragraph">
+              This is to certify that <strong id="cert-view-name">Hemnath.R</strong>, Reg. No: <strong id="cert-view-regno">RA2431022020098</strong>, a student of <strong id="cert-view-college">SRM INSTITUTE OF SCIENCE AND TECHNOLOGY</strong> , pursuing <strong id="cert-view-degree">AI&ML/BSc</strong>, has successfully completed an Internship Program Through <strong id="cert-view-mode">ONLINE</strong> at our organization in the domain of <strong id="cert-view-domain">Full Stack Development (Python)</strong> ,
+            </p>
+
+            <!-- Body Paragraph 2 -->
+            <p class="pdf-cert-paragraph">
+              The internship was undertaken from <strong id="cert-view-dates">10th August 2026 to 8th September 2026</strong>.
+            </p>
+
+            <!-- Body Paragraph 3 -->
+            <p class="pdf-cert-paragraph">
+              During the course of the internship, the student exhibited commendable professional behaviour and technical proficiency, particularly in the project titled
+            </p>
+
+            <!-- Project Box -->
+            <div class="pdf-cert-project-title">
+              &ldquo;<strong id="cert-view-project">FULL-Stack Movie Ticket Booking System Using Flask</strong>&rdquo;.
+            </div>
+
+            <!-- Body Paragraph 4 -->
+            <p class="pdf-cert-paragraph">
+              We extend our best wishes to continue success in all future endeavors.
+            </p>
+
+            <!-- Footer: QR on left, Signature on right -->
+            <div class="pdf-cert-footer-row">
+              <div class="pdf-cert-qr-container">
+                <img src="" alt="Verification QR Code" class="pdf-cert-qr-image" id="cert-view-qr-img" />
+                <div class="pdf-cert-qr-lbl">Scan to verify online</div>
+              </div>
+
+              <div class="pdf-cert-signature-container">
+                <div class="pdf-cert-company-name">For Approtech R&D Solutions Pvt. Ltd.,</div>
+                <div class="pdf-cert-signature-space"></div>
+                <div class="pdf-cert-signatory-name">Authorized Signature</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-modal-footer cert-modal-actions">
+        <button type="button" class="btn-secondary" onclick="closeModal('modal-certificate')">
+          <i class="fa-solid fa-xmark"></i> Close
+        </button>
+        <a id="btn-modal-verify-link" href="#" target="_blank" class="btn-secondary" style="text-decoration:none;">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Public Verification
+        </a>
+        <a id="btn-modal-download-docx" href="#" class="btn-docx" style="text-decoration:none;">
+          <i class="fa-solid fa-file-word"></i> Download .DOCX
+        </a>
+        <button type="button" class="btn-primary" onclick="printCertificate()">
+          <i class="fa-solid fa-print"></i> Print / PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4. QR CODE MODAL -->
+  <div class="admin-modal-overlay hidden" id="modal-qr">
+    <div class="admin-modal-dialog" style="max-width: 480px;">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title">
+          <i class="fa-solid fa-qrcode text-accent"></i>
+          <span>Verification QR Code</span>
+        </div>
+        <button type="button" class="admin-modal-close" onclick="closeModal('modal-qr')">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="admin-modal-body" style="text-align: center;">
+        <div style="background: #FFFFFF; display: inline-block; padding: 16px; border: 2px solid var(--border); border-radius: 12px; margin-bottom: 16px;">
+          <img src="" id="qr-modal-img" alt="Certificate QR Code" style="width: 200px; height: 200px; display: block;" />
+        </div>
+        <div style="font-family: monospace; font-size: 1.05rem; font-weight: 800; color: var(--accent); margin-bottom: 6px;" id="qr-modal-cert-id">
+          INT:APP26-27/0000-0000
+        </div>
+        <p style="font-size: 0.85rem; color: var(--muted); margin-bottom: 16px;">
+          Scanning this QR code directs straight to Approtech's public certificate verification portal.
+        </p>
+
+        <div class="batch-link-box" style="margin-bottom: 14px;">
+          <code id="qr-modal-url">https://approtech.com/verify/...</code>
+          <button type="button" class="btn-copy-link-sm" onclick="copyVerificationUrl()">
+            <i class="fa-regular fa-copy"></i> <span id="copy-qr-text">Copy URL</span>
+          </button>
+        </div>
+
+        <a href="" target="_blank" id="qr-modal-open-link" class="btn-secondary" style="width: 100%; text-decoration: none; justify-content: center;">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Public Verification Page
+        </a>
+      </div>
+
+      <div class="admin-modal-footer">
+        <button type="button" class="btn-secondary" onclick="closeModal('modal-qr')">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. CREATE BATCH MODAL -->
+  <div class="admin-modal-overlay hidden" id="modal-create-batch">
+    <div class="admin-modal-dialog">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title">
+          <i class="fa-solid fa-folder-plus text-accent"></i>
+          <span>Create New Internship Batch</span>
+        </div>
+        <button type="button" class="admin-modal-close" onclick="closeModal('modal-create-batch')">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <form id="create-batch-form" onsubmit="submitNewBatch(event)">
+        <div class="admin-modal-body">
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label">Batch Code *</label>
+            <input type="text" id="new-batch-code" class="form-input" placeholder="e.g. APP26-SUMMER" required style="text-transform: uppercase;" />
+            <div class="field-microcopy">Unique identifier used for student submission URLs (e.g. /student-form/APP26-SUMMER).</div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 16px;">
+            <label class="form-label">Batch Name *</label>
+            <input type="text" id="new-batch-name" class="form-input" placeholder="e.g. Approtech Summer Internship 2026" required />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Batch Leader / Coordinator</label>
+            <input type="text" id="new-batch-leader" class="form-input" placeholder="e.g. Admin Leader" value="Admin Leader" />
+          </div>
+        </div>
+
+        <div class="admin-modal-footer">
+          <button type="button" class="btn-secondary" onclick="closeModal('modal-create-batch')">Cancel</button>
+          <button type="submit" class="btn-primary" id="btn-create-batch-submit">
+            <i class="fa-solid fa-check"></i> Create Batch
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 6. EMAIL SETTINGS MODAL -->
+  <div class="admin-modal-overlay hidden" id="modal-email-settings">
+    <div class="admin-modal-dialog">
+      <div class="admin-modal-header">
+        <div class="admin-modal-title">
+          <i class="fa-solid fa-envelope-circle-check text-accent"></i>
+          <span>Email & Notification Settings</span>
+        </div>
+        <button type="button" class="admin-modal-close" onclick="closeModal('modal-email-settings')">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="admin-modal-body">
+        <div class="view-info-section">
+          <div class="view-section-header">
+            <i class="fa-solid fa-bell"></i>
+            <span>Automated Notifications Status</span>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+            <div>
+              <div style="font-weight: 700; color: var(--primary); font-size: 0.95rem;">Certificate Approval Alerts</div>
+              <div style="font-size: 0.8rem; color: var(--muted);">Notify students by email upon certificate generation</div>
+            </div>
+            <label style="position: relative; display: inline-block; width: 44px; height: 24px; cursor: pointer;">
+              <input type="checkbox" id="toggle-email-alerts" checked style="opacity: 0; width: 0; height: 0;" />
+              <span style="position: absolute; cursor: pointer; inset: 0; background: var(--accent); border-radius: 24px; transition: .3s;"></span>
+            </label>
+          </div>
+
+          <div style="background: #EFF6FF; border: 1px solid #BFDBFE; border-radius: 8px; padding: 12px; font-size: 0.82rem; color: #1E40AF;">
+            <i class="fa-solid fa-info-circle"></i> Email delivery service scheduled for future integration. Current system stores verified emails for broadcast.
+          </div>
+        </div>
+      </div>
+
+      <div class="admin-modal-footer">
+        <button type="button" class="btn-primary" onclick="closeModal('modal-email-settings')">Save & Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================== -->
+  <!-- JAVASCRIPT LOGIC -->
+  <!-- ======================================================================== -->
+  <script>
+    let globalBatches = [];
+    let currentBatchId = 1;
+    let currentStatusFilter = 'All';
+    let currentSearchTerm = '';
+    let globalStudents = [];
+
+    document.addEventListener('DOMContentLoaded', () => {
+      loadBatchesAndMetrics();
+    });
+
+    // Tab Navigation
+    function switchTab(tab) {
+      document.querySelectorAll('.admin-tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(view => view.style.display = 'none');
+
+      if (tab === 'batches') {
+        document.getElementById('tab-btn-batches').classList.add('active');
+        document.getElementById('view-batches').style.display = 'block';
+      } else if (tab === 'students') {
+        document.getElementById('tab-btn-students').classList.add('active');
+        document.getElementById('view-students').style.display = 'block';
+        loadStudentsForBatch(currentBatchId);
+      }
+    }
+
+    // Modal Helpers
+    function openModal(id) {
+      document.getElementById(id).classList.remove('hidden');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function openEmailModal() {
+      openModal('modal-email-settings');
+    }
+
+    function openCreateBatchModal() {
+      document.getElementById('create-batch-form').reset();
+      openModal('modal-create-batch');
+    }
+
+    // Load Batches & Metrics
+    async function loadBatchesAndMetrics() {
+      try {
+        const res = await fetch('/api/batches');
+        const batches = await res.json();
+        globalBatches = batches;
+
+        // Render Batches Grid
+        const grid = document.getElementById('batches-grid-container');
+        grid.innerHTML = '';
+
+        let totalSubmissions = 0;
+        let pendingCount = 0;
+        let issuedCount = 0;
+
+        const select = document.getElementById('batch-filter-select');
+        select.innerHTML = '';
+
+        batches.forEach(b => {
+          totalSubmissions += (b.student_count || 0);
+          pendingCount += (b.pending_count || 0);
+          issuedCount += (b.generated_count || 0);
+
+          // Populate select
+          const opt = document.createElement('option');
+          opt.value = b.id;
+          opt.textContent = `${b.batch_code} - ${b.batch_name}`;
+          if (b.id === currentBatchId) opt.selected = true;
+          select.appendChild(opt);
+
+          // Create Batch Card
+          const formUrl = `${window.location.origin}/student-form/${b.batch_code}`;
+          const card = document.createElement('div');
+          card.className = 'batch-card';
+          card.innerHTML = `
+            <div>
+              <div class="batch-card-top">
+                <span class="batch-code-pill">
+                  <i class="fa-solid fa-hashtag"></i> ${b.batch_code}
+                </span>
+                <span class="batch-status-badge">
+                  <i class="fa-solid fa-circle-check"></i> ${b.status}
+                </span>
+              </div>
+
+              <div class="batch-name-title">${b.batch_name}</div>
+              <div class="batch-leader-info">
+                <i class="fa-solid fa-user-tie"></i> Leader: ${b.leader || 'Admin Leader'}
+              </div>
+
+              <div class="batch-metrics-row">
+                <div class="metric-mini-item">
+                  <div class="lbl">Total</div>
+                  <div class="num">${b.student_count || 0}</div>
+                </div>
+                <div class="metric-mini-item">
+                  <div class="lbl" style="color: #D97706;">Pending</div>
+                  <div class="num" style="color: #D97706;">${b.pending_count || 0}</div>
+                </div>
+                <div class="metric-mini-item">
+                  <div class="lbl" style="color: var(--success);">Generated</div>
+                  <div class="num" style="color: var(--success);">${b.generated_count || 0}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="batch-actions-row">
+              <div class="batch-link-box">
+                <code>${formUrl}</code>
+                <button type="button" class="btn-copy-link-sm" onclick="copyBatchUrl('${formUrl}', this)">
+                  <i class="fa-regular fa-copy"></i> Copy Link
+                </button>
+              </div>
+
+              <div class="batch-btns-split">
+                <button type="button" class="btn-batch-action primary" onclick="viewBatchStudents(${b.id})">
+                  <i class="fa-solid fa-table-list"></i> View Submissions
+                </button>
+                <a href="/student-form/${b.batch_code}" target="_blank" class="btn-batch-action">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Form
+                </a>
+              </div>
+            </div>
+          `;
+          grid.appendChild(card);
+        });
+
+        // Update Overview Stats
+        document.getElementById('stat-total-batches').textContent = batches.length;
+        document.getElementById('stat-total-students').textContent = totalSubmissions;
+        document.getElementById('stat-pending-reviews').textContent = pendingCount;
+        document.getElementById('stat-certificates-issued').textContent = issuedCount;
+        document.getElementById('badge-batches-count').textContent = batches.length;
+        document.getElementById('badge-pending-count').textContent = pendingCount;
+
+      } catch (err) {
+        console.error('Error loading batches:', err);
+      }
+    }
+
+    function viewBatchStudents(batchId) {
+      currentBatchId = batchId;
+      document.getElementById('batch-filter-select').value = batchId;
+      switchTab('students');
+    }
+
+    function onBatchSelectChange() {
+      currentBatchId = parseInt(document.getElementById('batch-filter-select').value);
+      loadStudentsForBatch(currentBatchId);
+    }
+
+    function copyBatchUrl(url, btn) {
+      navigator.clipboard.writeText(url).then(() => {
+        const orig = btn.innerHTML;
+        btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
+        setTimeout(() => { btn.innerHTML = orig; }, 1800);
+      });
+    }
+
+    // Load Students for Batch
+    async function loadStudentsForBatch(batchId) {
+      try {
+        let url = `/api/batches/${batchId}/students?status=${encodeURIComponent(currentStatusFilter)}`;
+        if (currentSearchTerm) {
+          url += `&search=${encodeURIComponent(currentSearchTerm)}`;
+        }
+        const res = await fetch(url);
+        const students = await res.json();
+        globalStudents = students;
+        renderStudentsTable(students);
+      } catch (err) {
+        console.error('Error loading students:', err);
+      }
+    }
+
+    function setStatusFilter(status, pillElem) {
+      currentStatusFilter = status;
+      document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+      pillElem.classList.add('active');
+      loadStudentsForBatch(currentBatchId);
+    }
+
+    function handleSearchInput() {
+      currentSearchTerm = document.getElementById('student-search-input').value.trim();
+      loadStudentsForBatch(currentBatchId);
+    }
+
+    function refreshStudentData() {
+      const btn = document.getElementById('btn-refresh-students');
+      if (btn) {
+        const icon = btn.querySelector('i');
+        if (icon) icon.classList.add('fa-spin');
+        setTimeout(() => { if (icon) icon.classList.remove('fa-spin'); }, 800);
+      }
+      loadBatchesAndMetrics();
+      loadStudentsForBatch(currentBatchId);
+    }
+
+    // Render Students Table (6-Column Layout matching official spec)
+    function renderStudentsTable(students) {
+      const tbody = document.getElementById('students-table-body');
+      tbody.innerHTML = '';
+
+      if (!students || students.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6">
+              <div class="empty-table-state">
+                <i class="fa-solid fa-users-slash"></i>
+                <h4>No student records found</h4>
+                <p>No submissions matching your filter in this batch.</p>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      students.forEach(st => {
+        const tr = document.createElement('tr');
+
+        // Status pill with colored dot
+        let statusDotPill = '';
+        if (st.status === 'Pending') {
+          statusDotPill = '<span class="status-dot-pill pending"><span class="dot"></span> Pending</span>';
+        } else if (st.status === 'Approved') {
+          statusDotPill = '<span class="status-dot-pill approved"><span class="dot"></span> Approved</span>';
+        } else {
+          statusDotPill = '<span class="status-dot-pill generated"><span class="dot"></span> Generated</span>';
+        }
+
+        const certCode = st.certificate_id ? st.certificate_id : 'No Cert ID';
+        const dateStr = st.submitted_at ? st.submitted_at.substring(0, 10) : '-';
+
+        // 4 square action buttons per row matching specification
+        let actionsHtml = `<div class="action-buttons-group">`;
+
+        // Button 1: View Details (Always)
+        actionsHtml += `
+          <button type="button" class="btn-action-icon view" title="View Full Details" onclick="viewStudent(${st.id})">
+            <i class="fa-solid fa-eye"></i>
+          </button>
+        `;
+
+        if (st.status === 'Pending') {
+          // Button 2: Edit
+          actionsHtml += `
+            <button type="button" class="btn-action-icon edit" title="Edit Student" onclick="editStudent(${st.id})">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button type="button" class="btn-action-icon approve" title="Approve Student" onclick="approveStudent(${st.id})">
+              <i class="fa-solid fa-check"></i>
+            </button>
+          `;
+        } else if (st.status === 'Approved') {
+          // Button 2: Edit, Button 3: Generate
+          actionsHtml += `
+            <button type="button" class="btn-action-icon edit" title="Edit Student" onclick="editStudent(${st.id})">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button type="button" class="btn-action-icon generate" title="Generate Certificate" onclick="generateCertificate(${st.id})">
+              <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </button>
+          `;
+        } else {
+          // Certificate Generated: Button 2: Preview Award, Button 3: QR Code
+          actionsHtml += `
+            <button type="button" class="btn-action-icon view-cert" title="Preview Certificate (PDF Match)" onclick="previewCertificate(${st.id})">
+              <i class="fa-solid fa-award"></i>
+            </button>
+            <button type="button" class="btn-action-icon qr" title="View QR Code" onclick="viewQrCode('${st.certificate_id}')">
+              <i class="fa-solid fa-qrcode"></i>
+            </button>
+          `;
+        }
+
+        // Button 4: Delete Student (Permanently replaces Archive)
+        actionsHtml += `
+          <button type="button" class="btn-action-icon delete" title="Delete Student Record" onclick="deleteStudent(${st.id})">
+            <i class="fa-solid fa-trash"></i>
+          </button>
+        </div>`;
+
+        tr.innerHTML = `
+          <td>
+            <div class="cell-student-details">
+              <span class="cell-student-name">${st.full_name}</span>
+              <span class="cell-reg-number">${st.register_number}</span>
+              <span class="cell-contact-sub">${st.email} • ${st.phone_number}</span>
+            </div>
+          </td>
+          <td>
+            <div class="cell-college-details">
+              <span class="cell-college-name">${st.college_name}</span>
+              <span class="cell-branch-sub">${st.degree_branch}</span>
+            </div>
+          </td>
+          <td>
+            <div class="cell-domain-details">
+              <span class="cell-domain-title">${st.domain}</span>
+              <span class="mode-badge-pill ${st.mode === 'Online' ? 'online' : 'offline'}">${st.mode}</span>
+            </div>
+          </td>
+          <td>
+            <div class="cell-project-title" title="${st.project_title}">
+              ${st.project_title}
+            </div>
+          </td>
+          <td>
+            <div class="cell-status-meta">
+              ${statusDotPill}
+              <div class="cell-cert-id ${st.certificate_id ? '' : 'none'}">${certCode}</div>
+              <div class="cell-date-sub"><i class="fa-regular fa-calendar"></i> ${dateStr}</div>
+            </div>
+          </td>
+          <td style="text-align: right;">
+            ${actionsHtml}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // View Student Details Modal
+    async function viewStudent(studentId) {
+      try {
+        const res = await fetch(`/api/students/${studentId}`);
+        const st = await res.json();
+        
+        const container = document.getElementById('view-student-modal-body');
+        container.innerHTML = `
+          <div class="view-info-section">
+            <div class="view-section-header">
+              <i class="fa-solid fa-user"></i> Personal & Academic Details
+            </div>
+            <div class="view-data-grid">
+              <div class="view-data-item">
+                <span class="lbl">Full Name</span>
+                <span class="val">${st.full_name}</span>
+              </div>
+              <div class="view-data-item">
+                <span class="lbl">Register Number</span>
+                <span class="val" style="font-family: monospace;">${st.register_number}</span>
+              </div>
+              <div class="view-data-item">
+                <span class="lbl">Email Address</span>
+                <span class="val">${st.email}</span>
+              </div>
+              <div class="view-data-item">
+                <span class="lbl">Phone Number</span>
+                <span class="val">${st.phone_number}</span>
+              </div>
+              <div class="view-data-item" style="grid-column: span 2;">
+                <span class="lbl">Institution / College</span>
+                <span class="val">${st.college_name}</span>
+              </div>
+              <div class="view-data-item">
+                <span class="lbl">Degree & Branch</span>
+                <span class="val">${st.degree_branch}</span>
+              </div>
+              <div class="view-data-item">
+                <span class="lbl">State</span>
+                <span class="val">${st.state || 'India'}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="view-info-section">
+            <div class="view-section-header">
+              <i class="fa-solid fa-laptop-code"></i> Internship & Project Information
+            </div>
+            <div class="view-data-grid">
+              <div class="view-data-item">
+                <span class="lbl">Batch</span>
+                <span class="val">${st.batch_code} (${st.batch_name})</span>
+              </div>
+              <div class="view-data-item">
+                <span class="lbl">Domain</span>
+                <span class="val">${st.domain}</span>
+              </div>
+              <div class="view-data-item">
+                <span class="lbl">Mode</span>
+                <span class="val">${st.mode}</span>
+              </div>
+              <div class="view-data-item">
+                <span class="lbl">Calculated Duration</span>
+                <span class="val" style="color: var(--accent);">${st.duration}</span>
+              </div>
+              <div class="view-data-item">
+                <span class="lbl">Tenure Dates</span>
+                <span class="val">${st.internship_start_date} to ${st.internship_end_date}</span>
+              </div>
+              <div class="view-data-item">
+                <span class="lbl">Status</span>
+                <span class="val">${st.status}</span>
+              </div>
+              <div class="view-data-item" style="grid-column: span 2;">
+                <span class="lbl">Project Title</span>
+                <span class="val" style="color: var(--primary); font-size: 1rem;">${st.project_title}</span>
+              </div>
+              <div class="view-data-item" style="grid-column: span 2;">
+                <span class="lbl">Certificate ID</span>
+                <span class="val" style="font-family: monospace; color: var(--accent);">${st.certificate_id || 'Not generated yet (Pending approval)'}</span>
+              </div>
+            </div>
+          </div>
+        `;
+        openModal('modal-view-student');
+      } catch (err) {
+        console.error('Error loading student details:', err);
+      }
+    }
+
+    // Edit Student Modal
+    async function editStudent(studentId) {
+      try {
+        const res = await fetch(`/api/students/${studentId}`);
+        const st = await res.json();
+
+        document.getElementById('edit-student-id').value = st.id;
+        document.getElementById('edit-fullName').value = st.full_name;
+        document.getElementById('edit-registerNo').value = st.register_number;
+        document.getElementById('edit-email').value = st.email;
+        document.getElementById('edit-phone').value = st.phone_number;
+        document.getElementById('edit-collegeName').value = st.college_name;
+        document.getElementById('edit-degreeBranch').value = st.degree_branch;
+        document.getElementById('edit-state').value = st.state || 'Tamil Nadu';
+        document.getElementById('edit-domain').value = st.domain;
+        document.getElementById('edit-mode').value = st.mode;
+        document.getElementById('edit-startDate').value = st.internship_start_date;
+        document.getElementById('edit-endDate').value = st.internship_end_date;
+        document.getElementById('edit-projectTitle').value = st.project_title;
+
+        openModal('modal-edit-student');
+      } catch (err) {
+        console.error('Error opening edit student:', err);
+      }
+    }
+
+    async function saveStudentEdit(e) {
+      e.preventDefault();
+      const id = document.getElementById('edit-student-id').value;
+      const payload = {
+        full_name: document.getElementById('edit-fullName').value.trim(),
+        register_number: document.getElementById('edit-registerNo').value.trim(),
+        email: document.getElementById('edit-email').value.trim(),
+        phone_number: document.getElementById('edit-phone').value.trim(),
+        college_name: document.getElementById('edit-collegeName').value.trim(),
+        degree_branch: document.getElementById('edit-degreeBranch').value.trim(),
+        state: document.getElementById('edit-state').value,
+        domain: document.getElementById('edit-domain').value,
+        mode: document.getElementById('edit-mode').value,
+        internship_start_date: document.getElementById('edit-startDate').value,
+        internship_end_date: document.getElementById('edit-endDate').value,
+        project_title: document.getElementById('edit-projectTitle').value.trim()
+      };
+
+      try {
+        const res = await fetch(`/api/students/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (res.ok) {
+          closeModal('modal-edit-student');
+          refreshStudentData();
+        } else {
+          alert('Failed to update student details');
+        }
+      } catch (err) {
+        console.error('Error saving student edit:', err);
+      }
+    }
+
+    // Approve Student Action
+    async function approveStudent(studentId) {
+      if (!confirm('Approve this student submission? This will assign a permanent Certificate ID.')) return;
+      try {
+        const res = await fetch(`/api/students/${studentId}/approve`, { method: 'POST' });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          refreshStudentData();
+        } else {
+          alert(data.error || 'Approval failed');
+        }
+      } catch (err) {
+        console.error('Approval error:', err);
+      }
+    }
+
+    // Generate Certificate Action
+    async function generateCertificate(studentId) {
+      try {
+        const res = await fetch(`/api/students/${studentId}/generate-certificate`, { method: 'POST' });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          refreshStudentData();
+          previewCertificate(studentId);
+        } else {
+          alert(data.error || 'Certificate generation failed');
+        }
+      } catch (err) {
+        console.error('Certificate gen error:', err);
+      }
+    }
+
+    // Preview Certificate
+    async function previewCertificate(studentId) {
+      try {
+        const res = await fetch(`/api/students/${studentId}/certificate`);
+        const cert = await res.json();
+
+        document.getElementById('cert-view-name').textContent = cert.full_name;
+        document.getElementById('cert-view-college').textContent = cert.college_name;
+        document.getElementById('cert-view-regno').textContent = cert.register_number;
+        document.getElementById('cert-view-degree').textContent = cert.degree_branch;
+        document.getElementById('cert-view-domain').textContent = cert.domain;
+        document.getElementById('cert-view-mode').textContent = (cert.mode || 'Online').toUpperCase();
+        document.getElementById('cert-view-dates').textContent = `${cert.formatted_start_date || cert.internship_start_date} to ${cert.formatted_end_date || cert.internship_end_date}`;
+        document.getElementById('cert-view-project').textContent = cert.project_title;
+        document.getElementById('cert-view-id').textContent = cert.certificate_id;
+        document.getElementById('cert-view-qr-img').src = cert.qr_api_url;
+
+        // Set action URLs
+        document.getElementById('btn-modal-download-docx').href = `/api/students/${studentId}/download-docx`;
+        document.getElementById('btn-modal-verify-link').href = cert.verification_url;
+
+        openModal('modal-certificate');
+      } catch (err) {
+        console.error('Error previewing certificate:', err);
+      }
+    }
+
+    function printCertificate() {
+      window.print();
+    }
+
+    // QR Code Modal
+    function viewQrCode(certId) {
+      if (!certId || certId === 'None') {
+        alert('No Certificate ID generated yet.');
+        return;
+      }
+      const qrUrl = `/api/qr/${encodeURIComponent(certId)}`;
+      const verifyUrl = `${window.location.origin}/verify/${certId}`;
+
+      document.getElementById('qr-modal-img').src = qrUrl;
+      document.getElementById('qr-modal-cert-id').textContent = certId;
+      document.getElementById('qr-modal-url').textContent = verifyUrl;
+      document.getElementById('qr-modal-open-link').href = verifyUrl;
+
+      openModal('modal-qr');
+    }
+
+    function copyVerificationUrl() {
+      const url = document.getElementById('qr-modal-url').textContent;
+      navigator.clipboard.writeText(url).then(() => {
+        const txt = document.getElementById('copy-qr-text');
+        txt.textContent = 'Copied!';
+        setTimeout(() => { txt.textContent = 'Copy URL'; }, 2000);
+      });
+    }
+
+    // Delete Student (Permanent)
+    async function deleteStudent(studentId) {
+      if (!confirm('Are you sure you want to permanently delete this student record? This action cannot be undone.')) return;
+      try {
+        const res = await fetch(`/api/students/${studentId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          refreshStudentData();
+        } else {
+          alert(data.error || 'Failed to delete student record.');
+        }
+      } catch (err) {
+        console.error('Delete error:', err);
+      }
+    }
+
+    // Create New Batch Submit
+    async function submitNewBatch(e) {
+      e.preventDefault();
+      const code = document.getElementById('new-batch-code').value.trim().toUpperCase();
+      const name = document.getElementById('new-batch-name').value.trim();
+      const leader = document.getElementById('new-batch-leader').value.trim() || 'Admin Leader';
+
+      try {
+        const res = await fetch('/api/batches', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ batch_code: code, batch_name: name, leader: leader })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          closeModal('modal-create-batch');
+          loadBatchesAndMetrics();
+        } else {
+          alert(data.error || 'Failed to create batch');
+        }
+      } catch (err) {
+        console.error('Create batch error:', err);
+      }
+    }
+  </script>
+</body>
+</html>

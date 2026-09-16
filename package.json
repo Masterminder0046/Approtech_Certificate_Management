@@ -1,0 +1,12 @@
+{
+  "name": "approtech-certificate-system",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "python3 app.py --port=3000 --host=0.0.0.0",
+    "build": "python3 -m py_compile app.py",
+    "start": "python3 app.py --port=3000 --host=0.0.0.0",
+    "lint": "python3 -m py_compile app.py"
+  }
+}

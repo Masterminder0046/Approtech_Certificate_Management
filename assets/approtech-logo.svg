@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="120" viewBox="0 0 400 120">
+  <defs>
+    <linearGradient id="g1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="100%" stop-color="#1E293B"/>
+    </linearGradient>
+    <linearGradient id="g2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563EB"/>
+      <stop offset="50%" stop-color="#06B6D4"/>
+      <stop offset="100%" stop-color="#3B82F6"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#06B6D4" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <!-- Logo Icon: Hexagonal Tech Symbol -->
+  <g transform="translate(15, 10)">
+    <!-- Outer Ring Hexagon -->
+    <path d="M50 10 L85 30 L85 70 L50 90 L15 70 L15 30 Z" fill="url(#g1)" stroke="url(#g2)" stroke-width="4.5" filter="url(#shadow)"/>
+    <!-- Inner Geometric Core -->
+    <path d="M50 25 L72 38 L72 62 L50 75 L28 62 L28 38 Z" fill="none" stroke="#06B6D4" stroke-width="2.5" stroke-dasharray="100" stroke-dashoffset="0"/>
+    <path d="M50 25 L50 45 M72 38 L55 48 M72 62 L55 52 M50 75 L50 55 M28 62 L45 52 M28 38 L45 48" stroke="#3B82F6" stroke-width="2" stroke-linecap="round"/>
+    <circle cx="50" cy="50" r="7" fill="url(#g2)"/>
+  </g>
+
+  <!-- Logo Text -->
+  <text x="125" y="62" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="34" letter-spacing="3" fill="#0F172A">APPRO<tspan fill="#2563EB">TECH</tspan></text>
+  <text x="127" y="82" font-family="system-ui, -apple-system, sans-serif" font-weight="600" font-size="11" letter-spacing="4.5" fill="#64748B">INNOVATION &amp; TECHNOLOGY</text>
+</svg>

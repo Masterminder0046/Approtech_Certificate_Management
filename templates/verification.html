@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Approtech - Certificate Verification Portal</title>
+  <meta name="description" content="Verify official Approtech Internship Certificates instantly." />
+  
+  <!-- Font Awesome 6.7.2 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous" />
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body style="background: #F8FAFC;">
+  <!-- Background Glows -->
+  <div class="bg-grid-overlay" aria-hidden="true"></div>
+  <div class="bg-blob blob-1" aria-hidden="true"></div>
+  <div class="bg-blob blob-2" aria-hidden="true"></div>
+
+  <div class="verify-page-wrapper">
+    <div class="verify-card">
+      
+      <!-- Top Brand Header -->
+      <div class="verify-header">
+        <img src="/assets/approtech-logo.png" alt="Approtech Logo" class="verify-logo" />
+        <h1>APPROTECH</h1>
+        <p>Official Internship Certificate Verification Portal</p>
+      </div>
+
+      {% if status == 'verified' %}
+        <!-- 1. VERIFIED CERTIFICATE STATE -->
+        <div class="status-banner verified">
+          <div class="status-banner-icon">
+            <i class="fa-solid fa-circle-check"></i>
+          </div>
+          <div class="status-banner-text">
+            <h2>✓ VERIFIED CERTIFICATE</h2>
+            <p>This certificate has been successfully verified against the official Approtech database records.</p>
+          </div>
+        </div>
+
+        <div class="verify-body">
+          <!-- Certificate ID Meta Box -->
+          <div class="verify-meta-box">
+            <div>
+              <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 2px;">
+                Certificate ID
+              </div>
+              <div class="cert-id-tag">{{ certificate_id }}</div>
+            </div>
+            <div style="text-align: right; display: flex; align-items: center; gap: 10px;">
+              <span class="status-badge generated">
+                <i class="fa-solid fa-check-double"></i> Verified & Active
+              </span>
+            </div>
+          </div>
+
+          <!-- STUDENT SECTION -->
+          <div class="verify-section">
+            <div class="verify-section-title">
+              <i class="fa-solid fa-user-graduate"></i>
+              <span>Student Details</span>
+            </div>
+            <div class="verify-grid">
+              <div class="verify-row">
+                <span class="label">Full Name</span>
+                <span class="value">{{ student.full_name }}</span>
+              </div>
+              <div class="verify-row">
+                <span class="label">Register Number</span>
+                <span class="value" style="font-family: monospace;">{{ student.register_number }}</span>
+              </div>
+              <div class="verify-row full">
+                <span class="label">Institution / College</span>
+                <span class="value">{{ student.college_name }}</span>
+              </div>
+              <div class="verify-row">
+                <span class="label">Degree & Branch</span>
+                <span class="value">{{ student.degree_branch }}</span>
+              </div>
+              <div class="verify-row">
+                <span class="label">State</span>
+                <span class="value">{{ student.state or 'India' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- INTERNSHIP SECTION -->
+          <div class="verify-section">
+            <div class="verify-section-title">
+              <i class="fa-solid fa-briefcase"></i>
+              <span>Internship Details</span>
+            </div>
+            <div class="verify-grid">
+              <div class="verify-row">
+                <span class="label">Organization</span>
+                <span class="value">Approtech (Batch {{ student.batch_code }})</span>
+              </div>
+              <div class="verify-row">
+                <span class="label">Domain</span>
+                <span class="value">{{ student.domain }}</span>
+              </div>
+              <div class="verify-row">
+                <span class="label">Internship Mode</span>
+                <span class="value">
+                  <span class="mode-badge-pill {{ 'online' if student.mode == 'Online' else 'offline' }}">{{ student.mode }}</span>
+                </span>
+              </div>
+              <div class="verify-row">
+                <span class="label">Internship Tenure</span>
+                <span class="value">{{ student.formatted_start_date or student.internship_start_date }} to {{ student.formatted_end_date or student.internship_end_date }}</span>
+              </div>
+              <div class="verify-row full">
+                <span class="label">Total Internship Duration</span>
+                <span class="value" style="color: var(--accent); font-weight: 700;">{{ duration }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- PROJECT SECTION -->
+          <div class="verify-section">
+            <div class="verify-section-title">
+              <i class="fa-solid fa-diagram-project"></i>
+              <span>Project Details</span>
+            </div>
+            <div class="verify-grid">
+              <div class="verify-row full">
+                <span class="label">Capstone Project Title</span>
+                <span class="value" style="font-size: 1.05rem; color: var(--primary);">{{ student.project_title }}</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="verify-footer">
+          <div class="verify-badge-pill">
+            <i class="fa-solid fa-shield-check"></i>
+            <span>Official Approtech Verified Record</span>
+          </div>
+          <div style="font-size: 0.78rem; color: var(--muted);">
+            Approved on: {{ student.approved_at or student.submitted_at }}
+          </div>
+        </div>
+
+      {% elif status == 'pending' %}
+        <!-- 2. PENDING STATE -->
+        <div class="status-banner pending">
+          <div class="status-banner-icon">
+            <i class="fa-solid fa-hourglass-half"></i>
+          </div>
+          <div class="status-banner-text">
+            <h2>Certificate Pending Review</h2>
+            <p>This internship submission is currently under review by Approtech administrators. The certificate has not yet been generated.</p>
+          </div>
+        </div>
+
+        <div class="verify-body">
+          <div class="verify-meta-box">
+            <div>
+              <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--muted); font-weight: 700;">Certificate ID</div>
+              <div class="cert-id-tag">{{ certificate_id }}</div>
+            </div>
+            <span class="status-badge pending">
+              <i class="fa-solid fa-clock"></i> Pending Approval
+            </span>
+          </div>
+
+          <div class="verify-section">
+            <div class="verify-section-title">
+              <i class="fa-solid fa-user"></i>
+              <span>Student Submission Information</span>
+            </div>
+            <div class="verify-grid">
+              <div class="verify-row">
+                <span class="label">Student Name</span>
+                <span class="value">{{ student.full_name }}</span>
+              </div>
+              <div class="verify-row">
+                <span class="label">Batch</span>
+                <span class="value">{{ student.batch_code }}</span>
+              </div>
+              <div class="verify-row full">
+                <span class="label">College</span>
+                <span class="value">{{ student.college_name }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="verify-footer">
+          <a href="/" style="color: var(--accent); font-size: 0.85rem; font-weight: 600; text-decoration: none;">
+            <i class="fa-solid fa-arrow-left"></i> Return to Admin
+          </a>
+        </div>
+
+      {% elif status == 'archived' %}
+        <!-- 3. ARCHIVED STATE -->
+        <div class="status-banner archived">
+          <div class="status-banner-icon">
+            <i class="fa-solid fa-box-archive"></i>
+          </div>
+          <div class="status-banner-text">
+            <h2>Record Inactive or Archived</h2>
+            <p>This internship certificate record is archived or no longer listed in active Approtech records.</p>
+          </div>
+        </div>
+
+        <div class="verify-body" style="text-align: center; padding: 36px 20px;">
+          <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 20px;">If you believe this is an error, please contact Approtech support with your Certificate ID: <strong>{{ certificate_id }}</strong>.</p>
+          <a href="/" class="btn-primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
+            <i class="fa-solid fa-home"></i> Approtech Home
+          </a>
+        </div>
+
+      {% else %}
+        <!-- 4. INVALID / NOT FOUND STATE -->
+        <div class="status-banner invalid">
+          <div class="status-banner-icon">
+            <i class="fa-solid fa-circle-xmark"></i>
+          </div>
+          <div class="status-banner-text">
+            <h2>Certificate Not Found</h2>
+            <p>We could not find any official Approtech certificate matching the provided ID: <strong>{{ certificate_id }}</strong>.</p>
+          </div>
+        </div>
+
+        <div class="verify-body">
+          <p style="font-size: 0.9rem; color: var(--muted); margin-bottom: 20px;">
+            Please ensure that you scanned the official QR code or entered the exact Certificate ID (format: <code>INT:APP26-27/XXXX-XXXX</code>).
+          </p>
+
+          <form onsubmit="event.preventDefault(); const id = document.getElementById('search-cert-id').value.trim(); if(id) window.location.href='/verify/' + encodeURIComponent(id);">
+            <div style="display: flex; gap: 8px;">
+              <input type="text" id="search-cert-id" placeholder="Enter Certificate ID to verify..." class="form-input" style="flex:1;" required />
+              <button type="submit" class="btn-primary" style="padding: 0 20px;">
+                <i class="fa-solid fa-magnifying-glass"></i> Verify
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="verify-footer">
+          <a href="/" style="color: var(--accent); font-size: 0.85rem; font-weight: 600; text-decoration: none;">
+            <i class="fa-solid fa-arrow-left"></i> Return to Admin
+          </a>
+        </div>
+
+      {% endif %}
+
+    </div>
+  </div>
+</body>
+</html>

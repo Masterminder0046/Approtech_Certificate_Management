@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Approtech - Internship Certificate Form (Batch {{ batch.batch_code }})</title>
+  <meta name="description" content="Submit your internship certificate details for the Approtech batch {{ batch.batch_code }}. Fast, interactive, and seamless certificate application experience." />
+  <meta property="og:title" content="Approtech - Internship Certificate Form" />
+  <meta property="og:description" content="Submit your internship certificate details for the Approtech batch {{ batch.batch_code }}." />
+  <meta property="og:type" content="website" />
+
+  <!-- Font Awesome 6.7.2 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous" />
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <!-- Canvas Confetti Container -->
+  <div id="confetti-container" class="confetti-container" aria-hidden="true"></div>
+
+  <!-- Background Texture & Ambient Glows -->
+  <div class="bg-grid-overlay" aria-hidden="true"></div>
+  <div class="bg-blob blob-1" aria-hidden="true"></div>
+  <div class="bg-blob blob-2" aria-hidden="true"></div>
+
+  <!-- Global App Layout -->
+  <div class="app-wrapper">
+
+    <!-- Mobile Navigation Header -->
+    <header class="mobile-header">
+      <div class="mobile-brand">
+        <img src="/assets/approtech-logo.png" alt="Approtech Logo" class="brand-logo-img" />
+        <div class="mobile-brand-title">
+          <span class="brand-title">APPROTECH</span>
+          <span class="brand-sub">Batch: {{ batch.batch_code }}</span>
+        </div>
+      </div>
+      <div style="display: flex; gap: 8px; align-items: center;">
+        <button type="button" class="btn-icon-startover" id="mobile-startover-btn" title="Start Over">
+          <i class="fa-solid fa-rotate-left"></i>
+        </button>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+      
+      <!-- LEFT SIDE: Certificate Journey Panel (Desktop) -->
+      <aside class="journey-panel">
+        <div class="journey-header">
+          <img src="/assets/approtech-logo.png" alt="Approtech Logo" class="brand-logo-img-large" />
+          <div class="badge-tag">
+            <span class="badge-dot"></span>
+            BATCH {{ batch.batch_code }}
+          </div>
+        </div>
+
+        <div class="journey-hero">
+          <h1 class="journey-title">Your experience.<br><span class="text-accent" style="color: var(--accent);">Your certificate.</span></h1>
+          <p class="journey-desc">Tell us a little about your internship in batch <strong>{{ batch.batch_code }}</strong> ({{ batch.batch_name }}). We’ll use these details to prepare your official certificate.</p>
+        </div>
+
+        <!-- Vertical Journey Indicator -->
+        <nav class="journey-steps-nav" aria-label="Certificate Progress Steps">
+          <div class="journey-step-item active" data-journey-step="1">
+            <div class="step-indicator">
+              <span class="step-num">01</span>
+              <i class="fa-solid fa-check step-check"></i>
+            </div>
+            <div class="step-info">
+              <span class="step-label">STEP 01</span>
+              <span class="step-name">Your Identity</span>
+            </div>
+          </div>
+
+          <div class="journey-step-item" data-journey-step="2">
+            <div class="step-indicator">
+              <span class="step-num">02</span>
+              <i class="fa-solid fa-check step-check"></i>
+            </div>
+            <div class="step-info">
+              <span class="step-label">STEP 02</span>
+              <span class="step-name">Academic Details</span>
+            </div>
+          </div>
+
+          <div class="journey-step-item" data-journey-step="3">
+            <div class="step-indicator">
+              <span class="step-num">03</span>
+              <i class="fa-solid fa-check step-check"></i>
+            </div>
+            <div class="step-info">
+              <span class="step-label">STEP 03</span>
+              <span class="step-name">Internship Details</span>
+            </div>
+          </div>
+
+          <div class="journey-step-item" data-journey-step="4">
+            <div class="step-indicator">
+              <span class="step-num">04</span>
+              <i class="fa-solid fa-check step-check"></i>
+            </div>
+            <div class="step-info">
+              <span class="step-label">STEP 04</span>
+              <span class="step-name">Project Details</span>
+            </div>
+          </div>
+
+          <div class="journey-step-item" data-journey-step="5">
+            <div class="step-indicator">
+              <span class="step-num">05</span>
+              <i class="fa-solid fa-check step-check"></i>
+            </div>
+            <div class="step-info">
+              <span class="step-label">STEP 05</span>
+              <span class="step-name">Review & Submit</span>
+            </div>
+          </div>
+        </nav>
+
+        <!-- Journey Footer / Official Verification Tip -->
+        <div class="journey-footer">
+          <div class="security-note">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>Official Certificate Portal &bull; Approtech R&amp;D Solutions</span>
+          </div>
+        </div>
+      </aside>
+
+      <!-- RIGHT SIDE: Multi-Step Interactive Form -->
+      <section class="form-section">
+
+        <!-- Top Header & Progress Bar -->
+        <div class="form-header-bar">
+          <!-- Mobile Compact Step Journey -->
+          <div class="mobile-step-pills" id="mobile-step-pills">
+            <span class="pill-step active" data-pill-step="1">01</span>
+            <span class="pill-divider"></span>
+            <span class="pill-step" data-pill-step="2">02</span>
+            <span class="pill-divider"></span>
+            <span class="pill-step" data-pill-step="3">03</span>
+            <span class="pill-divider"></span>
+            <span class="pill-step" data-pill-step="4">04</span>
+            <span class="pill-divider"></span>
+            <span class="pill-step" data-pill-step="5">05</span>
+          </div>
+
+          <!-- Certificate Progress Ring Header Component -->
+          <div class="header-progress-group">
+            <div class="progress-ring-box" id="progress-ring-box" title="Certificate Completion Progress">
+              <svg class="progress-ring-svg" width="58" height="58" viewBox="0 0 58 58">
+                <circle class="ring-bg" cx="29" cy="29" r="23" />
+                <circle class="ring-fill" id="progress-ring-fill" cx="29" cy="29" r="23" />
+              </svg>
+              <div class="ring-center-text" id="ring-text">20%</div>
+            </div>
+
+            <div class="header-step-meta">
+              <div class="step-badge">BATCH: {{ batch.batch_code }}</div>
+              <div class="step-counter-text" id="step-counter-text">Step 01 of 05</div>
+            </div>
+          </div>
+
+          <!-- Utility Action: Reset / Start Over -->
+          <button type="button" class="btn-start-over-desktop" id="desktop-startover-btn" title="Clear and Start Over">
+            <i class="fa-solid fa-rotate-left"></i>
+            <span>Start Over</span>
+          </button>
+        </div>
+
+        <!-- Linear Progress Bar -->
+        <div class="progress-track">
+          <div class="progress-bar-fill" id="progress-bar-fill"></div>
+        </div>
+
+        <!-- Dynamic Form View (Multi-Step Form Container) -->
+        <form id="certificate-form" class="certificate-form" novalidate autocomplete="off">
+          <!-- Batch Code (Locked to URL param) -->
+          <input type="hidden" id="batchCode" name="batchCode" value="{{ batch.batch_code }}" />
+
+          <!-- STEP 1: IDENTITY -->
+          <div class="form-step active" id="step-1" data-step="1">
+            <div class="step-intro">
+              <h2 class="step-title">Let's start with you</h2>
+              <p class="step-subtitle">First, tell us how we should identify you on your certificate.</p>
+            </div>
+
+            <div class="form-grid">
+              <!-- Full Name -->
+              <div class="form-group col-span-6">
+                <label for="fullName" class="form-label">
+                  <span>Full Name</span>
+                  <span class="req-star">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <i class="fa-solid fa-user input-icon"></i>
+                  <input type="text" id="fullName" name="fullName" class="form-input" placeholder="e.g. Rahul Sharma" required />
+                  <i class="fa-solid fa-circle-check field-valid-icon"></i>
+                </div>
+                <div class="field-microcopy">What's your full name as it should appear on your certificate?</div>
+                <div class="error-msg" id="err-fullName"></div>
+              </div>
+
+              <!-- Register Number -->
+              <div class="form-group col-span-6">
+                <label for="registerNo" class="form-label">
+                  <span>Register Number / Roll No.</span>
+                  <span class="req-star">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <i class="fa-solid fa-id-card input-icon"></i>
+                  <input type="text" id="registerNo" name="registerNo" class="form-input" placeholder="e.g. 21BCE0492" required />
+                  <i class="fa-solid fa-circle-check field-valid-icon"></i>
+                </div>
+                <div class="field-microcopy">Your official college roll number or university registration ID.</div>
+                <div class="error-msg" id="err-registerNo"></div>
+              </div>
+
+              <!-- Email Address -->
+              <div class="form-group col-span-6">
+                <label for="email" class="form-label">
+                  <span>Email Address</span>
+                  <span class="req-star">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <i class="fa-solid fa-envelope input-icon"></i>
+                  <input type="email" id="email" name="email" class="form-input" placeholder="rahul.sharma@example.com" required />
+                  <i class="fa-solid fa-circle-check field-valid-icon"></i>
+                </div>
+                <div class="field-microcopy">We will send your certificate confirmation to this email.</div>
+                <div class="error-msg" id="err-email"></div>
+              </div>
+
+              <!-- Phone Number (+91 prefix UX) -->
+              <div class="form-group col-span-6">
+                <label for="phone" class="form-label">
+                  <span>Phone Number</span>
+                  <span class="req-star">*</span>
+                </label>
+                <div class="input-wrapper phone-input-wrapper">
+                  <i class="fa-solid fa-phone input-icon"></i>
+                  <span class="phone-country-code">+91</span>
+                  <span class="phone-code-divider"></span>
+                  <input type="tel" id="phone" name="phone" class="form-input phone-field" placeholder="98765 43210" maxlength="10" required />
+                  <i class="fa-solid fa-circle-check field-valid-icon"></i>
+                </div>
+                <div class="field-microcopy">10-digit mobile number for certificate verification updates.</div>
+                <div class="error-msg" id="err-phone"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 2: ACADEMIC DETAILS -->
+          <div class="form-step" id="step-2" data-step="2">
+            <div class="step-intro">
+              <h2 class="step-title">Academic Background</h2>
+              <p class="step-subtitle">Tell us where and what you are studying.</p>
+            </div>
+
+            <div class="form-grid">
+              <!-- College Name -->
+              <div class="form-group col-span-12">
+                <label for="collegeName" class="form-label">
+                  <span>College / Institution Name</span>
+                  <span class="req-star">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <i class="fa-solid fa-building-columns input-icon"></i>
+                  <input type="text" id="collegeName" name="collegeName" class="form-input" placeholder="e.g. National Institute of Technology, Trichy" required />
+                  <i class="fa-solid fa-circle-check field-valid-icon"></i>
+                </div>
+                <div class="field-microcopy">Enter your college's full name as recognized officially.</div>
+                <div class="error-msg" id="err-collegeName"></div>
+              </div>
+
+              <!-- Degree & Branch -->
+              <div class="form-group col-span-6">
+                <label for="degreeBranch" class="form-label">
+                  <span>Degree & Branch / Specialization</span>
+                  <span class="req-star">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <i class="fa-solid fa-graduation-cap input-icon"></i>
+                  <input type="text" id="degreeBranch" name="degreeBranch" class="form-input" placeholder="e.g. B.Tech Computer Science & Engineering" required />
+                  <i class="fa-solid fa-circle-check field-valid-icon"></i>
+                </div>
+                <div class="field-microcopy">Your course and branch of study.</div>
+                <div class="error-msg" id="err-degreeBranch"></div>
+              </div>
+
+              <!-- State (Comprehensive Indian States Dropdown) -->
+              <div class="form-group col-span-6">
+                <label for="state" class="form-label">
+                  <span>State / Union Territory</span>
+                  <span class="req-star">*</span>
+                </label>
+                <div class="input-wrapper select-wrapper">
+                  <i class="fa-solid fa-map-location-dot input-icon"></i>
+                  <select id="state" name="state" class="form-select" required>
+                    <option value="" disabled selected>Select your state</option>
+                    <option value="Andhra Pradesh">Andhra Pradesh</option>
+                    <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                    <option value="Assam">Assam</option>
+                    <option value="Bihar">Bihar</option>
+                    <option value="Chhattisgarh">Chhattisgarh</option>
+                    <option value="Goa">Goa</option>
+                    <option value="Gujarat">Gujarat</option>
+                    <option value="Haryana">Haryana</option>
+                    <option value="Himachal Pradesh">Himachal Pradesh</option>
+                    <option value="Jharkhand">Jharkhand</option>
+                    <option value="Karnataka">Karnataka</option>
+                    <option value="Kerala">Kerala</option>
+                    <option value="Madhya Pradesh">Madhya Pradesh</option>
+                    <option value="Maharashtra">Maharashtra</option>
+                    <option value="Manipur">Manipur</option>
+                    <option value="Meghalaya">Meghalaya</option>
+                    <option value="Mizoram">Mizoram</option>
+                    <option value="Nagaland">Nagaland</option>
+                    <option value="Odisha">Odisha</option>
+                    <option value="Punjab">Punjab</option>
+                    <option value="Rajasthan">Rajasthan</option>
+                    <option value="Sikkim">Sikkim</option>
+                    <option value="Tamil Nadu">Tamil Nadu</option>
+                    <option value="Telangana">Telangana</option>
+                    <option value="Tripura">Tripura</option>
+                    <option value="Uttar Pradesh">Uttar Pradesh</option>
+                    <option value="Uttarakhand">Uttarakhand</option>
+                    <option value="West Bengal">West Bengal</option>
+                    <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+                    <option value="Chandigarh">Chandigarh</option>
+                    <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+                    <option value="Delhi">Delhi</option>
+                    <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                    <option value="Ladakh">Ladakh</option>
+                    <option value="Lakshadweep">Lakshadweep</option>
+                    <option value="Puducherry">Puducherry</option>
+                  </select>
+                  <i class="fa-solid fa-chevron-down select-chevron"></i>
+                </div>
+                <div class="field-microcopy">Where your institution or home address is situated.</div>
+                <div class="error-msg" id="err-state"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 3: INTERNSHIP DETAILS -->
+          <div class="form-step" id="step-3" data-step="3">
+            <div class="step-intro">
+              <h2 class="step-title">Your Internship Experience</h2>
+              <p class="step-subtitle">Specify your role, working mode, and tenure at Approtech.</p>
+            </div>
+
+            <div class="form-grid">
+              <!-- Domain -->
+              <div class="form-group col-span-12">
+                <label for="domain" class="form-label">
+                  <span>Internship Domain / Track</span>
+                  <span class="req-star">*</span>
+                </label>
+                <div class="input-wrapper select-wrapper">
+                  <i class="fa-solid fa-laptop-code input-icon"></i>
+                  <select id="domain" name="domain" class="form-select" required>
+                    <option value="" disabled selected>Select domain</option>
+                    <option value="Full Stack Development (MERN)">Full Stack Development (MERN)</option>
+                    <option value="Full Stack Development (Java)">Full Stack Development (Java)</option>
+                    <option value="Full Stack Development (Python)">Full Stack Development (Python)</option>
+                    <option value="Frontend Web Development">Frontend Web Development</option>
+                    <option value="Backend Engineering & Cloud">Backend Engineering & Cloud</option>
+                    <option value="Data Science & Machine Learning">Data Science & Machine Learning</option>
+                    <option value="Artificial Intelligence & NLP">Artificial Intelligence & NLP</option>
+                    <option value="UI/UX Design & Product Strategy">UI/UX Design & Product Strategy</option>
+                    <option value="Mobile App Development (Flutter/React Native)">Mobile App Development (Flutter/React Native)</option>
+                    <option value="Cybersecurity & Ethical Hacking">Cybersecurity & Ethical Hacking</option>
+                    <option value="DevOps & Cloud Architecture">DevOps & Cloud Architecture</option>
+                    <option value="Embedded Systems & IoT">Embedded Systems & IoT</option>
+                  </select>
+                  <i class="fa-solid fa-chevron-down select-caret"></i>
+                </div>
+                <div class="field-microcopy">The primary technical field you worked in during your internship.</div>
+                <div class="error-msg" id="err-domain"></div>
+              </div>
+
+              <!-- Mode (Radio Cards: Online / Offline) -->
+              <div class="form-group col-span-12">
+                <label class="form-label">
+                  <span>Internship Mode</span>
+                  <span class="req-star">*</span>
+                </label>
+                <div class="mode-cards-grid">
+                  <label class="mode-card" for="mode-online">
+                    <input type="radio" id="mode-online" name="mode" value="Online" class="mode-radio-input" checked />
+                    <div class="mode-card-content">
+                      <div class="mode-icon-box">
+                        <i class="fa-solid fa-laptop-code"></i>
+                      </div>
+                      <div class="mode-info">
+                        <span class="mode-title">Online Internship</span>
+                        <span class="mode-desc">Remote / Virtual Program</span>
+                      </div>
+                      <div class="mode-check-pill">
+                        <i class="fa-solid fa-check"></i>
+                      </div>
+                    </div>
+                  </label>
+
+                  <label class="mode-card" for="mode-offline">
+                    <input type="radio" id="mode-offline" name="mode" value="Offline" class="mode-radio-input" />
+                    <div class="mode-card-content">
+                      <div class="mode-icon-box">
+                        <i class="fa-solid fa-building"></i>
+                      </div>
+                      <div class="mode-info">
+                        <span class="mode-title">Offline Internship</span>
+                        <span class="mode-desc">In-Office / On-Site Program</span>
+                      </div>
+                      <div class="mode-check-pill">
+                        <i class="fa-solid fa-check"></i>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+                <div class="field-microcopy">Select how you completed your internship tenure.</div>
+                <div class="error-msg" id="err-mode"></div>
+              </div>
+
+              <!-- Start Date -->
+              <div class="form-group col-span-6">
+                <label for="startDate" class="form-label">
+                  <span>Internship Start Date</span>
+                  <span class="req-star">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <i class="fa-regular fa-calendar-days input-icon"></i>
+                  <input type="date" id="startDate" name="startDate" class="form-input" required />
+                </div>
+                <div class="field-microcopy">First working day of your internship.</div>
+                <div class="error-msg" id="err-startDate"></div>
+              </div>
+
+              <!-- End Date -->
+              <div class="form-group col-span-6">
+                <label for="endDate" class="form-label">
+                  <span>Internship End Date</span>
+                  <span class="req-star">*</span>
+                </label>
+                <div class="input-wrapper">
+                  <i class="fa-regular fa-calendar-check input-icon"></i>
+                  <input type="date" id="endDate" name="endDate" class="form-input" required />
+                </div>
+                <div class="field-microcopy">Last working day of your internship.</div>
+                <div class="error-msg" id="err-endDate"></div>
+              </div>
+
+              <!-- Dynamic Calculated Duration Box -->
+              <div class="form-group col-span-12">
+                <div class="duration-box" id="duration-box">
+                  <div class="duration-left">
+                    <div class="duration-icon-circle">
+                      <i class="fa-solid fa-clock-rotate-left"></i>
+                    </div>
+                    <div class="duration-details">
+                      <span class="duration-label">Calculated Internship Duration</span>
+                      <span class="duration-val" id="duration-val">Select start and end dates</span>
+                    </div>
+                  </div>
+                  <div class="duration-badge-auto">
+                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                    <span>Auto-Calculated</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 4: PROJECT DETAILS -->
+          <div class="form-step" id="step-4" data-step="4">
+            <div class="step-intro">
+              <h2 class="step-title">What did you build?</h2>
+              <p class="step-subtitle">Provide your main project title to be printed on your certificate.</p>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group col-span-12">
+                <div class="project-hero-input-card">
+                  <label for="projectTitle" class="form-label label-prominent">
+                    <i class="fa-solid fa-diagram-project label-icon-heading"></i>
+                    <span>Project Title / Name</span>
+                    <span class="req-star">*</span>
+                  </label>
+                  <div class="input-wrapper input-wrapper-lg">
+                    <i class="fa-solid fa-rocket input-icon"></i>
+                    <input type="text" id="projectTitle" name="projectTitle" class="form-input form-input-lg" placeholder="e.g. Smart E-Commerce Platform with AI Recommendations" required />
+                    <i class="fa-solid fa-circle-check field-valid-icon"></i>
+                  </div>
+                  <div class="field-microcopy highlight-microcopy">What did you work on during your internship? Provide the title of your capstone project.</div>
+                  <div class="error-msg" id="err-projectTitle"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 5: REVIEW & SUBMIT -->
+          <div class="form-step" id="step-5" data-step="5">
+            <div class="step-intro">
+              <h2 class="step-title">Almost there.</h2>
+              <p class="step-subtitle">Take one final look before submitting your certificate details to Approtech.</p>
+            </div>
+
+            <!-- Certificate Review Card Layout -->
+            <div class="review-container">
+
+              <!-- PERSONAL SECTION -->
+              <div class="review-card">
+                <div class="review-card-header">
+                  <div class="review-card-title">
+                    <i class="fa-solid fa-user-shield"></i>
+                    <span>PERSONAL INFORMATION</span>
+                  </div>
+                  <button type="button" class="btn-edit-step" data-edit-target="1" title="Edit Personal Details">
+                    <i class="fa-solid fa-pen-to-square"></i> Edit
+                  </button>
+                </div>
+                <div class="review-grid">
+                  <div class="review-item">
+                    <span class="review-label">Full Name</span>
+                    <span class="review-value" id="rev-fullName">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Register Number</span>
+                    <span class="review-value" id="rev-registerNo">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Email Address</span>
+                    <span class="review-value" id="rev-email">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Phone Number</span>
+                    <span class="review-value" id="rev-phone">-</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- ACADEMIC SECTION -->
+              <div class="review-card">
+                <div class="review-card-header">
+                  <div class="review-card-title">
+                    <i class="fa-solid fa-building-columns"></i>
+                    <span>ACADEMIC DETAILS</span>
+                  </div>
+                  <button type="button" class="btn-edit-step" data-edit-target="2" title="Edit Academic Details">
+                    <i class="fa-solid fa-pen-to-square"></i> Edit
+                  </button>
+                </div>
+                <div class="review-grid">
+                  <div class="review-item col-span-12">
+                    <span class="review-label">College Name</span>
+                    <span class="review-value" id="rev-collegeName">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Degree & Branch</span>
+                    <span class="review-value" id="rev-degreeBranch">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">State</span>
+                    <span class="review-value" id="rev-state">-</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- INTERNSHIP SECTION -->
+              <div class="review-card">
+                <div class="review-card-header">
+                  <div class="review-card-title">
+                    <i class="fa-solid fa-award"></i>
+                    <span>INTERNSHIP DETAILS</span>
+                  </div>
+                  <button type="button" class="btn-edit-step" data-edit-target="3" title="Edit Internship Details">
+                    <i class="fa-solid fa-pen-to-square"></i> Edit
+                  </button>
+                </div>
+                <div class="review-grid">
+                  <div class="review-item">
+                    <span class="review-label">Batch Code</span>
+                    <span class="review-value" style="font-weight: 700; color: var(--accent);">{{ batch.batch_code }}</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Domain</span>
+                    <span class="review-value" id="rev-domain">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Mode</span>
+                    <span class="review-value badge-review-mode" id="rev-mode">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">Start Date</span>
+                    <span class="review-value" id="rev-startDate">-</span>
+                  </div>
+                  <div class="review-item">
+                    <span class="review-label">End Date</span>
+                    <span class="review-value" id="rev-endDate">-</span>
+                  </div>
+                  <div class="review-item col-span-12">
+                    <span class="review-label">Calculated Duration</span>
+                    <span class="review-value highlight-text" id="rev-duration">-</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- PROJECT SECTION -->
+              <div class="review-card highlight-card">
+                <div class="review-card-header">
+                  <div class="review-card-title">
+                    <i class="fa-solid fa-diagram-project"></i>
+                    <span>PROJECT TITLE</span>
+                  </div>
+                  <button type="button" class="btn-edit-step" data-edit-target="4" title="Edit Project Details">
+                    <i class="fa-solid fa-pen-to-square"></i> Edit
+                  </button>
+                </div>
+                <div class="review-grid">
+                  <div class="review-item col-span-12">
+                    <span class="review-value text-lg" id="rev-projectTitle">-</span>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Bottom Action Buttons Bar -->
+          <div class="form-actions-bar">
+            <button type="button" class="btn-nav btn-secondary" id="btn-prev" disabled>
+              <i class="fa-solid fa-arrow-left"></i>
+              <span>Back</span>
+            </button>
+
+            <button type="button" class="btn-nav btn-primary" id="btn-next">
+              <span>Continue</span>
+              <i class="fa-solid fa-arrow-right arrow-icon"></i>
+            </button>
+
+            <button type="submit" class="btn-nav btn-submit hidden" id="btn-submit">
+              <i class="fa-solid fa-paper-plane"></i>
+              <span>Submit Details</span>
+            </button>
+          </div>
+
+        </form>
+
+        <!-- SUCCESS / CONFIRMATION SCREEN (Hidden initially) -->
+        <div class="success-screen hidden" id="success-screen">
+          <div class="success-badge-anim">
+            <div class="success-icon-ring">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+          </div>
+
+          <h2 class="success-heading">You're all set!</h2>
+          <p class="success-desc">Your internship certificate submission for batch <strong>{{ batch.batch_code }}</strong> has been successfully received and queued for verification and issuance.</p>
+
+          <!-- Generated Reference ID Card -->
+          <div class="ref-card">
+            <div class="ref-label">Submission Reference ID</div>
+            <div class="ref-code-group">
+              <span class="ref-code" id="success-ref-id">AP-2026-0001</span>
+              <button type="button" class="btn-copy-ref" id="btn-copy-ref" title="Copy Reference ID">
+                <i class="fa-regular fa-copy"></i>
+                <span id="copy-text">Copy</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Approtech Internship Certificate Status Card -->
+          <div class="cert-preview-card">
+            <div class="cert-card-header">
+              <img src="/assets/approtech-logo.png" alt="Approtech Logo" class="cert-logo" />
+              <div class="cert-batch-tag">BATCH {{ batch.batch_code }}</div>
+            </div>
+
+            <div class="cert-card-body">
+              <div class="cert-subtext">APPROTECH INTERNSHIP SUBMISSION</div>
+              <h3 class="cert-student-name" id="cert-student-name">Rahul Sharma</h3>
+              <div class="cert-details-line">
+                <span id="cert-domain-tag">Full Stack Development (Java)</span>
+                <span class="dot-sep">•</span>
+                <span id="cert-mode-tag">Online</span>
+              </div>
+              <div class="cert-meta-grid">
+                <div>
+                  <span class="cert-meta-lbl">Institution</span>
+                  <span class="cert-meta-val" id="cert-college">National Institute of Technology</span>
+                </div>
+                <div>
+                  <span class="cert-meta-lbl">Reg No</span>
+                  <span class="cert-meta-val" id="cert-regno">21BCE0492</span>
+                </div>
+                <div>
+                  <span class="cert-meta-lbl">Duration</span>
+                  <span class="cert-meta-val" id="cert-duration-val">42 days</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="cert-card-footer">
+              <div class="cert-status-pill">
+                <i class="fa-solid fa-clock"></i> Status: Submitted &amp; Pending Verification
+              </div>
+              <div class="cert-date-stamp" id="cert-date-stamp">Submitted to Approtech</div>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="success-actions">
+            <button type="button" class="btn-secondary" id="btn-another-response">
+              <i class="fa-solid fa-plus"></i> Submit Another Response
+            </button>
+            <a href="https://approtechsolutions.in" target="_blank" rel="noopener noreferrer" class="btn-primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
+              <i class="fa-solid fa-globe"></i> Visit Approtech Official
+            </a>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Approtech Official Company Footer (Matching Exact Reference) -->
+    <footer class="approtech-dark-footer">
+      <div class="footer-container">
+        <div class="footer-grid">
+          <!-- Column 1: Company About & Motto -->
+          <div class="footer-col about-col">
+            <h3 class="footer-title">Approtech R&amp;D Solutions Pvt. Ltd.</h3>
+            <p class="footer-motto">&ldquo;Empowering the Next Generation of Innovators&rdquo;</p>
+            <p class="footer-desc">
+              ISO 9001:2015 Certified engineering services and EdTech organization dedicated to practical technology skills and industry exposure.
+            </p>
+          </div>
+
+          <!-- Column 2: Office Address -->
+          <div class="footer-col address-col">
+            <h3 class="footer-title">Office Address</h3>
+            <div class="footer-item">
+              <div class="footer-icon-circle">
+                <i class="fa-solid fa-location-dot"></i>
+              </div>
+              <span class="footer-text">No: 41/14, First Floor, Kamarajar Street, Tambaram West, Chennai - 600045</span>
+            </div>
+            <div class="footer-item">
+              <div class="footer-icon-circle">
+                <i class="fa-solid fa-map-location-dot"></i>
+              </div>
+              <a href="https://maps.google.com/?q=41/14+Kamarajar+Street+Tambaram+West+Chennai+600045" target="_blank" rel="noopener noreferrer" class="footer-map-link">
+                Find us on Google Maps &rarr;
+              </a>
+            </div>
+          </div>
+
+          <!-- Column 3: Contact & Support -->
+          <div class="footer-col contact-col">
+            <h3 class="footer-title">Contact &amp; Support</h3>
+            <div class="footer-item">
+              <div class="footer-icon-circle">
+                <i class="fa-solid fa-phone"></i>
+              </div>
+              <span class="footer-text">+91 96265 12344 / +91 96265 44044</span>
+            </div>
+            <div class="footer-item">
+              <div class="footer-icon-circle">
+                <i class="fa-solid fa-globe"></i>
+              </div>
+              <a href="https://approtechsolutions.in" target="_blank" rel="noopener noreferrer" class="footer-web-link">
+                approtechsolutions.in
+              </a>
+            </div>
+            <div class="footer-item notice-item">
+              <div class="footer-icon-circle notice">
+                <i class="fa-solid fa-circle-exclamation"></i>
+              </div>
+              <span class="footer-notice-text">Internship fee is non-refundable under any circumstances.</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom Copyright Row -->
+        <div class="footer-bottom-bar">
+          <span>&copy; 2026 Approtech R&amp;D Solutions Pvt. Ltd. All rights reserved.</span>
+        </div>
+      </div>
+    </footer>
+
+  </div>
+
+  <!-- CUSTOM MODAL: Welcome Back Progress Restored -->
+  <div class="modal-overlay hidden" id="modal-welcome">
+    <div class="modal-card">
+      <div class="modal-icon-header">
+        <i class="fa-solid fa-hand-wave text-accent"></i>
+      </div>
+      <h3 class="modal-title">Welcome back 👋</h3>
+      <p class="modal-desc">Your progress is still here. Would you like to continue where you left off?</p>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="btn-welcome-reset">Start over</button>
+        <button type="button" class="btn-primary" id="btn-welcome-resume">Continue where I left off</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- CUSTOM MODAL: Start Over Confirmation -->
+  <div class="modal-overlay hidden" id="modal-startover">
+    <div class="modal-card">
+      <div class="modal-icon-header text-error">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+      </div>
+      <h3 class="modal-title">Start over?</h3>
+      <p class="modal-desc">Your entered details will be cleared from this browser. This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn-secondary" id="btn-startover-cancel">Cancel</button>
+        <button type="button" class="btn-danger" id="btn-startover-confirm">Start Over</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/script.js" defer></script>
+</body>
+</html>

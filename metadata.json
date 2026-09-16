@@ -1,0 +1,6 @@
+{
+  "name": "Approtech Internship Certificate Form",
+  "description": "Approtech Internship Certificate Management System covering student submission, admin batch management, reviews, approvals, certificate generation, and public QR verification.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
