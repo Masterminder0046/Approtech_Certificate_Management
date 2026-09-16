@@ -10,9 +10,18 @@ When the server is running locally:
 
 | Portal | URL | Description |
 |---|---|---|
-| **Admin Management Dashboard** | **`http://localhost:3000/`** or **`http://localhost:3000/admin`** | Manage student applications, approve requests, generate certificates, view QR codes, and manage batches. |
-| **Student Application Form** | **`http://localhost:3000/student-form/APP26-27`** | Public student application form for certificate issuance. |
+| **Student Application Form (Default)** | **`http://localhost:3000/`** or **`/student-form/APP26-27`** | Default landing page. Public student form for certificate issuance. |
+| **Admin Login & Portal** | **`http://localhost:3000/admin`** | Protected administrative portal. Requires authentication. |
 | **Certificate Verification** | **`http://localhost:3000/verify/<certificate_id>`** | Public verification portal for scanned QR codes and verified certificates. |
+
+---
+
+## Admin Credentials
+
+- **Username**: `admin`
+- **Password**: `admin@approtech2026`
+
+*(Can be configured via environment variables `ADMIN_USER` and `ADMIN_PASSWORD`).*
 
 ---
 
@@ -32,5 +41,5 @@ python app.py --host 0.0.0.0 --port 3000
 ```
 
 The system will start at:
-👉 **Admin Portal**: [http://localhost:3000/](http://localhost:3000/)  
-👉 **Student Form**: [http://localhost:3000/student-form/APP26-27](http://localhost:3000/student-form/APP26-27)
+👉 **Student Form (Direct Default)**: [http://localhost:3000/](http://localhost:3000/)  
+👉 **Admin Portal (Protected)**: [http://localhost:3000/admin](http://localhost:3000/admin)

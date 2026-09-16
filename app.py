@@ -19,7 +19,8 @@ from flask import (
     send_from_directory,
     send_file,
     redirect,
-    abort
+    abort,
+    session
 )
 import qrcode
 from docx import Document
@@ -49,6 +50,7 @@ app = Flask(
     template_folder='templates'
 )
 app.config['TEMPLATES_AUTO_RELOAD'] = True
+app.secret_key = os.environ.get('SECRET_KEY', 'approtech-cert-management-secret-key-2026')
 
 # ---------------------------------------------------------------------------
 # DATABASE HELPERS
@@ -358,16 +360,53 @@ def serve_public(path):
 # ---------------------------------------------------------------------------
 
 @app.route('/')
+def home():
+    """Direct root URL opens the Student Application Form directly."""
+    return redirect('/student-form/APP26-27')
+
 @app.route('/admin')
 @app.route('/admin/')
 def admin_dashboard():
-    """Renders the Admin Management Dashboard."""
+    """Renders the Admin Management Dashboard (Protected by authentication)."""
+    if not session.get('admin_logged_in'):
+        return redirect('/admin/login')
+
     conn = get_db()
     cur = conn.cursor()
     cur.execute("SELECT * FROM batches ORDER BY id ASC")
     batches = [dict(b) for b in cur.fetchall()]
     conn.close()
     return render_template('admin.html', batches=batches)
+
+@app.route('/admin/login', methods=['GET', 'POST'])
+def admin_login():
+    """Admin Login Portal."""
+    if session.get('admin_logged_in'):
+        return redirect('/admin')
+
+    error = None
+    if request.method == 'POST':
+        username = request.form.get('username', '').strip()
+        password = request.form.get('password', '').strip()
+
+        admin_user = os.environ.get('ADMIN_USER', 'admin')
+        admin_pass = os.environ.get('ADMIN_PASSWORD', 'admin@approtech2026')
+
+        if username == admin_user and password == admin_pass:
+            session['admin_logged_in'] = True
+            session['admin_user'] = username
+            return redirect('/admin')
+        else:
+            error = 'Invalid admin credentials. Please verify your username and password.'
+
+    return render_template('admin_login.html', error=error)
+
+@app.route('/admin/logout')
+def admin_logout():
+    """Logs out of the Admin Portal."""
+    session.pop('admin_logged_in', None)
+    session.pop('admin_user', None)
+    return redirect('/admin/login')
 
 @app.route('/index.html')
 def index_html():

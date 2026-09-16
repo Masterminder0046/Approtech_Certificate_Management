@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Portal Login - Approtech Internship Certificate Management</title>
+  <meta name="description" content="Secure administrative login for Approtech Certificate Management." />
+  
+  <!-- Font Awesome 6.7.2 CDN -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" crossorigin="anonymous" />
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/style.css" />
+
+  <style>
+    body {
+      background-color: #0B132B;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      font-family: var(--font-body);
+      color: #0F172A;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 440px;
+      margin: 0 auto;
+    }
+
+    .login-card {
+      background: #FFFFFF;
+      border-radius: var(--radius-lg);
+      padding: 38px 32px 32px;
+      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.35);
+      border: 1px solid #1E293B;
+    }
+
+    .login-brand-header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .login-logo {
+      height: 46px;
+      width: auto;
+      object-fit: contain;
+      margin-bottom: 14px;
+    }
+
+    .login-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      background: #EFF6FF;
+      color: #2563EB;
+      margin-bottom: 10px;
+    }
+
+    .login-title {
+      font-family: var(--font-heading);
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #0F172A;
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+    }
+
+    .login-subtitle {
+      font-size: 0.84rem;
+      color: #64748B;
+      line-height: 1.45;
+    }
+
+    .login-alert {
+      background: #FEF2F2;
+      border: 1.5px solid #FCA5A5;
+      color: #DC2626;
+      border-radius: var(--radius-sm);
+      padding: 12px 14px;
+      font-size: 0.82rem;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .login-alert-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .login-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .login-label {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #0F172A;
+    }
+
+    .login-input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .login-input-icon {
+      position: absolute;
+      left: 14px;
+      color: #94A3B8;
+      font-size: 0.95rem;
+      pointer-events: none;
+      transition: var(--transition-fast);
+    }
+
+    .login-input {
+      width: 100%;
+      height: 44px;
+      padding: 0 40px 0 42px;
+      font-family: var(--font-body);
+      font-size: 0.9rem;
+      color: #0F172A;
+      background-color: #FFFFFF;
+      border: 1.5px solid #CBD5E1;
+      border-radius: var(--radius-sm);
+      outline: none;
+      transition: var(--transition-fast);
+    }
+
+    .login-input:focus {
+      border-color: #2563EB;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .login-group:focus-within .login-input-icon {
+      color: #2563EB;
+    }
+
+    .btn-toggle-pwd {
+      position: absolute;
+      right: 12px;
+      background: none;
+      border: none;
+      color: #94A3B8;
+      cursor: pointer;
+      font-size: 0.95rem;
+      padding: 4px;
+      transition: var(--transition-fast);
+    }
+
+    .btn-toggle-pwd:hover {
+      color: #0F172A;
+    }
+
+    .btn-login-submit {
+      width: 100%;
+      height: 46px;
+      background-color: #2563EB;
+      color: #FFFFFF;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 8px;
+      transition: var(--transition-fast);
+    }
+
+    .btn-login-submit:hover {
+      background-color: #1D4ED8;
+      transform: translateY(-1px);
+    }
+
+    .btn-login-submit:active {
+      transform: translateY(0);
+    }
+
+    .login-footer-links {
+      text-align: center;
+      margin-top: 24px;
+      padding-top: 18px;
+      border-top: 1px solid #E2E8F0;
+    }
+
+    .link-student-portal {
+      color: #2563EB;
+      text-decoration: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: var(--transition-fast);
+    }
+
+    .link-student-portal:hover {
+      text-decoration: underline;
+      color: #1D4ED8;
+    }
+
+    .login-bottom-credits {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 0.76rem;
+      color: #64748B;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="login-container">
+    <div class="login-card">
+      
+      <!-- Brand Header -->
+      <div class="login-brand-header">
+        <img src="/assets/approtech-logo.png" alt="Approtech Logo" class="login-logo" />
+        <div class="login-badge">
+          <i class="fa-solid fa-shield-halved"></i>
+          <span>ADMIN ACCESS REQUIRED</span>
+        </div>
+        <h1 class="login-title">Admin Management Portal</h1>
+        <p class="login-subtitle">Please enter your authorized credentials to manage student applications and certificate issuance.</p>
+      </div>
+
+      <!-- Error Alert (If Any) -->
+      {% if error %}
+      <div class="login-alert" role="alert">
+        <i class="fa-solid fa-circle-exclamation login-alert-icon"></i>
+        <span>{{ error }}</span>
+      </div>
+      {% endif %}
+
+      <!-- Login Form -->
+      <form method="POST" action="/admin/login" class="login-form" autocomplete="off">
+        
+        <div class="login-group">
+          <label for="username" class="login-label">Username</label>
+          <div class="login-input-wrapper">
+            <i class="fa-solid fa-user-shield login-input-icon"></i>
+            <input 
+              type="text" 
+              id="username" 
+              name="username" 
+              class="login-input" 
+              placeholder="e.g. admin" 
+              required 
+              autofocus 
+            />
+          </div>
+        </div>
+
+        <div class="login-group">
+          <label for="password" class="login-label">Password</label>
+          <div class="login-input-wrapper">
+            <i class="fa-solid fa-lock login-input-icon"></i>
+            <input 
+              type="password" 
+              id="password" 
+              name="password" 
+              class="login-input" 
+              placeholder="Enter admin password" 
+              required 
+            />
+            <button type="button" class="btn-toggle-pwd" id="toggle-pwd-btn" title="Show / Hide Password">
+              <i class="fa-solid fa-eye" id="pwd-icon"></i>
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-login-submit">
+          <i class="fa-solid fa-arrow-right-to-bracket"></i>
+          <span>Sign In to Dashboard</span>
+        </button>
+
+      </form>
+
+      <!-- Return to Student Portal Link -->
+      <div class="login-footer-links">
+        <a href="/" class="link-student-portal">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>Go to Student Application Form</span>
+        </a>
+      </div>
+
+    </div>
+
+    <div class="login-bottom-credits">
+      &copy; 2026 Approtech R&amp;D Solutions Pvt. Ltd. All rights reserved.
+    </div>
+  </div>
+
+  <script>
+    const toggleBtn = document.getElementById('toggle-pwd-btn');
+    const pwdInput = document.getElementById('password');
+    const pwdIcon = document.getElementById('pwd-icon');
+
+    if (toggleBtn && pwdInput && pwdIcon) {
+      toggleBtn.addEventListener('click', () => {
+        const isPwd = pwdInput.type === 'password';
+        pwdInput.type = isPwd ? 'text' : 'password';
+        pwdIcon.className = isPwd ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+      });
+    }
+  </script>
+
+</body>
+</html>
