@@ -27,9 +27,20 @@ from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml import parse_xml
-from docx.oxml.ns import nsdecls
+import shutil
 
-DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.db')
+# Serverless (Vercel) / Read-only environment SQLite support
+if os.environ.get('VERCEL') or not os.access(os.path.dirname(os.path.abspath(__file__)), os.W_OK):
+    TEMP_DB = '/tmp/database.db'
+    SRC_DB = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.db')
+    if not os.path.exists(TEMP_DB) and os.path.exists(SRC_DB):
+        try:
+            shutil.copy2(SRC_DB, TEMP_DB)
+        except Exception:
+            pass
+    DB_PATH = TEMP_DB if os.path.exists(TEMP_DB) else SRC_DB
+else:
+    DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.db')
 
 app = Flask(
     __name__,
@@ -50,6 +61,10 @@ def get_db():
 
 def init_db():
     """Initializes the database without dropping existing tables or data."""
+    try:
+        os.makedirs(os.path.dirname(os.path.abspath(DB_PATH)), exist_ok=True)
+    except Exception:
+        pass
     conn = get_db()
     cur = conn.cursor()
 
@@ -907,9 +922,11 @@ def delete_student(student_id):
     conn.close()
     return jsonify({'success': True, 'message': 'Student record permanently deleted.'})
 
-# ---------------------------------------------------------------------------
-# CLI & ENTRY POINT
-# ---------------------------------------------------------------------------
+# Ensure DB is initialized at module import (crucial for Vercel Serverless)
+try:
+    init_db()
+except Exception as _e:
+    print("Module DB init notice:", _e)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Approtech Internship Certificate Management System')
