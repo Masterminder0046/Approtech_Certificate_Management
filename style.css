@@ -1639,17 +1639,18 @@ body {
     display: none;
   }
 
-  /* Mobile Header Navigation */
+  /* Mobile Header Navigation - Premium Light Card Header */
   .mobile-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: var(--primary);
-    color: #FFFFFF;
-    padding: 16px 20px;
-    border-radius: var(--radius-lg);
-    margin-bottom: 16px;
-    box-shadow: var(--shadow-md);
+    background: #FFFFFF;
+    color: var(--text);
+    padding: 12px 16px;
+    border-radius: var(--radius-xl);
+    margin-bottom: 18px;
+    border: 1px solid var(--border);
+    box-shadow: 0 4px 20px -4px rgba(15, 23, 42, 0.08);
   }
 
   .mobile-brand {
@@ -1659,31 +1660,51 @@ body {
   }
 
   .brand-logo-img {
-    height: 32px;
-    width: auto;
+    height: 42px;
+    width: 42px;
+    object-fit: contain;
+    border-radius: 10px;
+    filter: drop-shadow(0 2px 6px rgba(37, 99, 235, 0.18));
+    flex-shrink: 0;
   }
 
   .mobile-brand-title {
     display: flex;
     flex-direction: column;
+    justify-content: center;
   }
 
   .brand-title {
     font-family: var(--font-heading);
-    font-size: 1rem;
+    font-size: 1.12rem;
     font-weight: 800;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.03em;
+    color: var(--primary);
+    line-height: 1.15;
   }
 
   .brand-sub {
     font-size: 0.72rem;
-    color: #94A3B8;
+    font-weight: 600;
+    color: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 2px;
+  }
+
+  .brand-sub .badge-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    display: inline-block;
   }
 
   .btn-icon-startover {
-    background: rgba(255, 255, 255, 0.1);
-    border: none;
-    color: #FFFFFF;
+    background: #F1F5F9;
+    border: 1px solid #E2E8F0;
+    color: #475569;
     width: 38px;
     height: 38px;
     border-radius: 50%;
@@ -1691,6 +1712,13 @@ body {
     align-items: center;
     justify-content: center;
     cursor: pointer;
+    transition: var(--transition-fast);
+  }
+
+  .btn-icon-startover:hover {
+    background: #E2E8F0;
+    color: var(--accent);
+    transform: rotate(-30deg);
   }
 
   /* Compact Horizontal Step Pills for Mobile */
