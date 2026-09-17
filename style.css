@@ -619,6 +619,7 @@ body {
   font-size: 1rem;
   transition: var(--transition-fast);
   pointer-events: none;
+  z-index: 2; /* Keeps icon always visible above focused input */
 }
 
 .form-input, .form-select {
@@ -648,7 +649,8 @@ body {
   transform: translateY(-1px);
 }
 
-.form-group:focus-within .input-icon {
+/* Icon color changes particularly for the selected input box only */
+.input-wrapper:focus-within .input-icon {
   color: var(--accent);
   transform: scale(1.1);
 }
@@ -667,6 +669,7 @@ body {
   transform: scale(0.6);
   transition: var(--transition-fast);
   pointer-events: none;
+  z-index: 2;
 }
 
 .input-wrapper.is-valid .field-valid-icon {
@@ -750,15 +753,15 @@ body {
   padding-right: 36px;
 }
 
-.form-group:focus-within .phone-input-wrapper .input-icon {
+.phone-input-wrapper:focus-within .input-icon {
   color: var(--accent);
 }
 
-.form-group:focus-within .phone-country-code {
+.phone-input-wrapper:focus-within .phone-country-code {
   color: var(--accent);
 }
 
-.form-group:focus-within .phone-code-divider {
+.phone-input-wrapper:focus-within .phone-code-divider {
   background-color: var(--accent);
 }
 
@@ -789,6 +792,7 @@ body {
   font-size: 0.85rem;
   pointer-events: none;
   transition: var(--transition-fast);
+  z-index: 2;
 }
 
 .select-wrapper:focus-within .select-caret {
