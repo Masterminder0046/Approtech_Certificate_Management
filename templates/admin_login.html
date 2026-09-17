@@ -14,6 +14,14 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
   
+  <!-- Favicon & Brand Icons -->
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/favicon-16x16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/apple-touch-icon.png" />
+  <link rel="shortcut icon" href="/assets/favicon.ico" />
+  <link rel="manifest" href="/assets/site.webmanifest" />
+  <meta name="theme-color" content="#2563EB" />
+
   <link rel="stylesheet" href="/style.css" />
 
   <style>
@@ -28,18 +36,17 @@
       color: #0F172A;
     }
 
-    .login-container {
-      width: 100%;
-      max-width: 440px;
-      margin: 0 auto;
-    }
-
     .login-card {
       background: #FFFFFF;
-      border-radius: var(--radius-lg);
-      padding: 38px 32px 32px;
-      box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.35);
-      border: 1px solid #1E293B;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      box-shadow: 0 24px 48px -12px rgba(2, 6, 23, 0.45);
+      width: 100%;
+      max-width: 440px;
+      padding: 40px 36px 36px;
+      position: relative;
+      z-index: 10;
+      animation: modalScaleIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .login-brand-header {
@@ -48,7 +55,7 @@
     }
 
     .login-logo {
-      height: 46px;
+      height: 72px;
       width: auto;
       object-fit: contain;
       margin-bottom: 14px;

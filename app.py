@@ -483,6 +483,10 @@ def serve_assets(path):
 def serve_public(path):
     return send_from_directory('public', path)
 
+@app.route('/favicon.ico')
+def serve_favicon():
+    return send_from_directory('assets', 'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
 # ---------------------------------------------------------------------------
 # PUBLIC / PAGE ROUTES
 # ---------------------------------------------------------------------------
