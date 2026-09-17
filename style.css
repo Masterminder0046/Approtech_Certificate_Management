@@ -3405,12 +3405,119 @@ select:focus-visible {
 }
 
 @media (max-width: 860px) {
+  .approtech-dark-footer {
+    padding: 28px 20px 20px;
+  }
+
   .footer-grid {
     grid-template-columns: 1fr;
-    gap: 28px;
+    gap: 20px;
   }
+
+  .footer-col {
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .footer-col:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .footer-title {
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+  }
+
+  .footer-motto {
+    font-size: 0.82rem;
+    margin-bottom: 6px;
+  }
+
+  .footer-desc {
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+
+  .footer-item {
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+
+  .footer-icon-circle {
+    width: 24px;
+    height: 24px;
+    font-size: 0.75rem;
+  }
+
+  .footer-text,
+  .footer-map-link,
+  .footer-web-link {
+    font-size: 0.8rem;
+    line-height: 1.4;
+  }
+
+  .footer-bottom-bar {
+    margin-top: 20px;
+    padding-top: 14px;
+    font-size: 0.74rem;
+    text-align: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 540px) {
   .approtech-dark-footer {
-    padding: 36px 18px 24px;
+    padding: 20px 16px 16px;
+  }
+
+  .footer-grid {
+    gap: 14px;
+  }
+
+  .footer-col {
+    padding-bottom: 12px;
+  }
+
+  /* Keep company info ultra-clean on mobile phones */
+  .footer-col.about-col .footer-desc {
+    display: none;
+  }
+
+  .footer-title {
+    font-size: 0.88rem;
+    margin-bottom: 6px;
+  }
+
+  .footer-motto {
+    font-size: 0.78rem;
+    margin-bottom: 4px;
+  }
+
+  .footer-item {
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .footer-icon-circle {
+    width: 20px;
+    height: 20px;
+    font-size: 0.68rem;
+  }
+
+  .footer-text,
+  .footer-map-link,
+  .footer-web-link {
+    font-size: 0.76rem;
+  }
+
+  .footer-bottom-bar {
+    margin-top: 14px;
+    padding-top: 12px;
+    font-size: 0.7rem;
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
   }
 }
 

@@ -28,6 +28,7 @@ from docx.shared import Inches, Pt, RGBColor
 from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml import parse_xml
+from docx.oxml.ns import nsdecls
 import shutil
 
 # Serverless (Vercel) / Read-only environment SQLite support
@@ -408,6 +409,11 @@ def admin_logout():
     session.pop('admin_user', None)
     return redirect('/admin/login')
 
+@app.route('/health')
+def health_check():
+    """Lightweight health check endpoint for monitoring/keep-alive pingers."""
+    return jsonify({'status': 'ok', 'service': 'Approtech Certificate Management'}), 200
+
 @app.route('/index.html')
 def index_html():
     return redirect('/student-form/APP26-27')
@@ -457,15 +463,6 @@ def verify_certificate(certificate_id):
         ), 404
 
     student = dict(row)
-
-    # Check if archived
-    if student.get('archived') == 1:
-        return render_template(
-            'verification.html',
-            status='archived',
-            certificate_id=certificate_id,
-            student=student
-        )
 
     # Check if not yet generated
     if student.get('certificate_generated') != 1:
@@ -948,7 +945,7 @@ def archive_student(student_id):
 @app.route('/api/students/<int:student_id>', methods=['DELETE'])
 @app.route('/api/students/<int:student_id>/delete', methods=['POST'])
 def delete_student(student_id):
-    """Permanently deletes a student record from the database."""
+    """Removes a student record from the admin dashboard while preserving public QR verification."""
     conn = get_db()
     cur = conn.cursor()
     cur.execute("SELECT id FROM students WHERE id = ?", (student_id,))
@@ -956,10 +953,10 @@ def delete_student(student_id):
         conn.close()
         return jsonify({'error': 'Student not found'}), 404
 
-    cur.execute("DELETE FROM students WHERE id = ?", (student_id,))
+    cur.execute("UPDATE students SET archived = 1 WHERE id = ?", (student_id,))
     conn.commit()
     conn.close()
-    return jsonify({'success': True, 'message': 'Student record permanently deleted.'})
+    return jsonify({'success': True, 'message': 'Student record removed from admin portal.'})
 
 # Ensure DB is initialized at module import (crucial for Vercel Serverless)
 try:

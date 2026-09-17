@@ -880,9 +880,22 @@
     // View Student Details Modal
     async function viewStudent(studentId) {
       try {
-        const res = await fetch(`/api/students/${studentId}`);
-        const st = await res.json();
-        
+        let st = globalStudents.find(s => s.id === studentId);
+        if (!st) {
+          const res = await fetch(`/api/students/${studentId}`);
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            alert(err.error || 'Student record could not be found.');
+            return;
+          }
+          st = await res.json();
+        }
+
+        if (!st || !st.full_name) {
+          alert('Student record data is unavailable.');
+          return;
+        }
+
         const container = document.getElementById('view-student-modal-body');
         container.innerHTML = `
           <div class="view-info-section">
@@ -892,31 +905,31 @@
             <div class="view-data-grid">
               <div class="view-data-item">
                 <span class="lbl">Full Name</span>
-                <span class="val">${st.full_name}</span>
+                <span class="val">${st.full_name || '-'}</span>
               </div>
               <div class="view-data-item">
                 <span class="lbl">Register Number</span>
-                <span class="val" style="font-family: monospace;">${st.register_number}</span>
+                <span class="val" style="font-family: monospace;">${st.register_number || '-'}</span>
               </div>
               <div class="view-data-item">
                 <span class="lbl">Email Address</span>
-                <span class="val">${st.email}</span>
+                <span class="val">${st.email || '-'}</span>
               </div>
               <div class="view-data-item">
                 <span class="lbl">Phone Number</span>
-                <span class="val">${st.phone_number}</span>
+                <span class="val">${st.phone_number || '-'}</span>
               </div>
               <div class="view-data-item" style="grid-column: span 2;">
                 <span class="lbl">Institution / College</span>
-                <span class="val">${st.college_name}</span>
+                <span class="val">${st.college_name || '-'}</span>
               </div>
               <div class="view-data-item">
                 <span class="lbl">Degree & Branch</span>
-                <span class="val">${st.degree_branch}</span>
+                <span class="val">${st.degree_branch || '-'}</span>
               </div>
               <div class="view-data-item">
                 <span class="lbl">State</span>
-                <span class="val">${st.state || 'India'}</span>
+                <span class="val">${st.state || 'Tamil Nadu'}</span>
               </div>
             </div>
           </div>
@@ -928,31 +941,31 @@
             <div class="view-data-grid">
               <div class="view-data-item">
                 <span class="lbl">Batch</span>
-                <span class="val">${st.batch_code} (${st.batch_name})</span>
+                <span class="val">${st.batch_code || 'APP26-27'} (${st.batch_name || 'Approtech'})</span>
               </div>
               <div class="view-data-item">
                 <span class="lbl">Domain</span>
-                <span class="val">${st.domain}</span>
+                <span class="val">${st.domain || '-'}</span>
               </div>
               <div class="view-data-item">
                 <span class="lbl">Mode</span>
-                <span class="val">${st.mode}</span>
+                <span class="val">${st.mode || 'Online'}</span>
               </div>
               <div class="view-data-item">
                 <span class="lbl">Calculated Duration</span>
-                <span class="val" style="color: var(--accent);">${st.duration}</span>
+                <span class="val" style="color: var(--accent);">${st.duration || '-'}</span>
               </div>
               <div class="view-data-item">
                 <span class="lbl">Tenure Dates</span>
-                <span class="val">${st.internship_start_date} to ${st.internship_end_date}</span>
+                <span class="val">${st.internship_start_date || '-'} to ${st.internship_end_date || '-'}</span>
               </div>
               <div class="view-data-item">
                 <span class="lbl">Status</span>
-                <span class="val">${st.status}</span>
+                <span class="val">${st.status || 'Pending'}</span>
               </div>
               <div class="view-data-item" style="grid-column: span 2;">
                 <span class="lbl">Project Title</span>
-                <span class="val" style="color: var(--primary); font-size: 1rem;">${st.project_title}</span>
+                <span class="val" style="color: var(--primary); font-size: 1rem;">${st.project_title || '-'}</span>
               </div>
               <div class="view-data-item" style="grid-column: span 2;">
                 <span class="lbl">Certificate ID</span>
@@ -964,38 +977,58 @@
         openModal('modal-view-student');
       } catch (err) {
         console.error('Error loading student details:', err);
+        alert('Failed to load student details');
       }
     }
 
     // Edit Student Modal
     async function editStudent(studentId) {
       try {
-        const res = await fetch(`/api/students/${studentId}`);
-        const st = await res.json();
+        let st = globalStudents.find(s => s.id === studentId);
+        if (!st) {
+          const res = await fetch(`/api/students/${studentId}`);
+          if (!res.ok) {
+            const err = await res.json().catch(() => ({}));
+            alert(err.error || 'Student not found or failed to load');
+            return;
+          }
+          st = await res.json();
+        }
 
-        document.getElementById('edit-student-id').value = st.id;
-        document.getElementById('edit-fullName').value = st.full_name;
-        document.getElementById('edit-registerNo').value = st.register_number;
-        document.getElementById('edit-email').value = st.email;
-        document.getElementById('edit-phone').value = st.phone_number;
-        document.getElementById('edit-collegeName').value = st.college_name;
-        document.getElementById('edit-degreeBranch').value = st.degree_branch;
+        if (!st || !st.id) {
+          alert('Student record is not available.');
+          return;
+        }
+
+        document.getElementById('edit-student-id').value = st.id || '';
+        document.getElementById('edit-fullName').value = st.full_name || '';
+        document.getElementById('edit-registerNo').value = st.register_number || '';
+        document.getElementById('edit-email').value = st.email || '';
+        document.getElementById('edit-phone').value = st.phone_number || '';
+        document.getElementById('edit-collegeName').value = st.college_name || '';
+        document.getElementById('edit-degreeBranch').value = st.degree_branch || '';
         document.getElementById('edit-state').value = st.state || 'Tamil Nadu';
-        document.getElementById('edit-domain').value = st.domain;
-        document.getElementById('edit-mode').value = st.mode;
-        document.getElementById('edit-startDate').value = st.internship_start_date;
-        document.getElementById('edit-endDate').value = st.internship_end_date;
-        document.getElementById('edit-projectTitle').value = st.project_title;
+        if (st.domain) document.getElementById('edit-domain').value = st.domain;
+        if (st.mode) document.getElementById('edit-mode').value = st.mode;
+        document.getElementById('edit-startDate').value = st.internship_start_date || '';
+        document.getElementById('edit-endDate').value = st.internship_end_date || '';
+        document.getElementById('edit-projectTitle').value = st.project_title || '';
 
         openModal('modal-edit-student');
       } catch (err) {
         console.error('Error opening edit student:', err);
+        alert('Could not open edit student: ' + err.message);
       }
     }
 
     async function saveStudentEdit(e) {
       e.preventDefault();
       const id = document.getElementById('edit-student-id').value;
+      if (!id || id === 'undefined') {
+        alert('Invalid student ID. Cannot save changes.');
+        return;
+      }
+
       const payload = {
         full_name: document.getElementById('edit-fullName').value.trim(),
         register_number: document.getElementById('edit-registerNo').value.trim(),
@@ -1021,10 +1054,12 @@
           closeModal('modal-edit-student');
           refreshStudentData();
         } else {
-          alert('Failed to update student details');
+          const err = await res.json().catch(() => ({}));
+          alert(err.error || 'Failed to update student details');
         }
       } catch (err) {
         console.error('Error saving student edit:', err);
+        alert('Network error while saving changes');
       }
     }
 
@@ -1064,6 +1099,11 @@
     async function previewCertificate(studentId) {
       try {
         const res = await fetch(`/api/students/${studentId}/certificate`);
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          alert(err.error || 'Failed to load certificate preview');
+          return;
+        }
         const cert = await res.json();
 
         document.getElementById('cert-view-name').textContent = cert.full_name;
@@ -1117,9 +1157,9 @@
       });
     }
 
-    // Delete Student (Permanent)
+    // Delete Student
     async function deleteStudent(studentId) {
-      if (!confirm('Are you sure you want to permanently delete this student record? This action cannot be undone.')) return;
+      if (!confirm('Remove this student from the admin dashboard? (The student will be removed from this list, but public QR verification will remain active).')) return;
       try {
         const res = await fetch(`/api/students/${studentId}`, { method: 'DELETE' });
         const data = await res.json();
