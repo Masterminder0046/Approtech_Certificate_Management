@@ -258,7 +258,8 @@
       {% endif %}
 
       <!-- Login Form -->
-      <form method="POST" action="/admin/login" class="login-form" autocomplete="off">
+      <form method="POST" action="/admin/login{% if next_target and next_target != '/admin' %}?next={{ next_target | urlencode }}{% endif %}" class="login-form" autocomplete="off">
+        <input type="hidden" name="next" value="{{ next_target or '/admin' }}" />
         
         <div class="login-group">
           <label for="username" class="login-label">Username</label>

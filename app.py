@@ -7,10 +7,13 @@ Backend: Python 3 + Flask + native SQLite3
 import os
 import io
 import sys
+import time
 import random
 import sqlite3
 import argparse
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+from functools import wraps
+from urllib.parse import urlparse, urljoin
 from flask import (
     Flask,
     request,
@@ -52,6 +55,88 @@ app = Flask(
 )
 app.config['TEMPLATES_AUTO_RELOAD'] = True
 app.secret_key = os.environ.get('SECRET_KEY', 'approtech-cert-management-secret-key-2026')
+
+# Hardened session cookies and expiration
+app.config.update(
+    SESSION_COOKIE_HTTPONLY=True,
+    SESSION_COOKIE_SAMESITE='Lax',
+    PERMANENT_SESSION_LIFETIME=timedelta(hours=12)
+)
+
+# ---------------------------------------------------------------------------
+# SECURITY & AUTHENTICATION HELPERS
+# ---------------------------------------------------------------------------
+
+FAILED_LOGINS = {}  # ip -> {'count': int, 'lockout_until': float}
+
+def get_client_ip():
+    """Extracts client IP address safely, checking proxy headers if present."""
+    if request.headers.get('X-Forwarded-For'):
+        return request.headers.get('X-Forwarded-For').split(',')[0].strip()
+    return request.remote_addr or '127.0.0.1'
+
+def is_ip_locked(ip):
+    """Checks whether the client IP is temporarily locked out due to failed attempts."""
+    record = FAILED_LOGINS.get(ip)
+    if not record:
+        return False, 0
+    if record.get('lockout_until', 0) > time.time():
+        remaining = int(record['lockout_until'] - time.time())
+        return True, remaining
+    return False, 0
+
+def record_failed_login(ip):
+    """Tracks failed login attempts and triggers 10-minute security lockout after 5 failures."""
+    record = FAILED_LOGINS.setdefault(ip, {'count': 0, 'lockout_until': 0})
+    record['count'] += 1
+    if record['count'] >= 5:
+        record['lockout_until'] = time.time() + 600  # 10 minute lockout
+    return record['count']
+
+def clear_failed_logins(ip):
+    """Clears failed attempts counter upon successful authentication."""
+    FAILED_LOGINS.pop(ip, None)
+
+def is_safe_url(target):
+    """
+    Validates redirect targets to strictly prevent Open Redirect attacks.
+    Blocks backslash tricks, scheme changes, and off-domain redirection.
+    """
+    if not target or not isinstance(target, str):
+        return False
+    target = target.strip()
+    # Reject backslash evasion or protocol-relative '//attacker.com'
+    if not target or '\\' in target or target.startswith('//'):
+        return False
+    # Validate destination host matches our host or is a relative path
+    ref_url = urlparse(request.host_url)
+    test_url = urlparse(urljoin(request.host_url, target))
+    return test_url.scheme in ('http', 'https') and ref_url.netloc == test_url.netloc
+
+def admin_required(f):
+    """Decorator ensuring that administrative endpoints require an active session."""
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get('admin_logged_in'):
+            # Return JSON 401 for API endpoints
+            if request.path.startswith('/api/'):
+                return jsonify({'error': 'Unauthorized. Administrator login required.'}), 401
+            # For admin UI pages, safely redirect to login with validated next target
+            next_param = request.full_path if request.query_string else request.path
+            if not is_safe_url(next_param):
+                next_param = '/admin'
+            return redirect(f"/admin/login?next={next_param}")
+        return f(*args, **kwargs)
+    return decorated_function
+
+@app.after_request
+def add_security_headers(response):
+    """Attaches standard security headers to all HTTP responses."""
+    response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+    response.headers['X-Content-Type-Options'] = 'nosniff'
+    response.headers['X-XSS-Protection'] = '1; mode=block'
+    response.headers['Referrer-Policy'] = 'strict-origin-when-cross-origin'
+    return response
 
 # ---------------------------------------------------------------------------
 # DATABASE HELPERS
@@ -367,11 +452,9 @@ def home():
 
 @app.route('/admin')
 @app.route('/admin/')
+@admin_required
 def admin_dashboard():
     """Renders the Admin Management Dashboard (Protected by authentication)."""
-    if not session.get('admin_logged_in'):
-        return redirect('/admin/login')
-
     conn = get_db()
     cur = conn.cursor()
     cur.execute("SELECT * FROM batches ORDER BY id ASC")
@@ -381,9 +464,22 @@ def admin_dashboard():
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
-    """Admin Login Portal."""
+    """Admin Login Portal with brute-force protection and safe URL redirection."""
+    raw_next = request.args.get('next') or request.form.get('next') or '/admin'
+    next_target = raw_next if is_safe_url(raw_next) else '/admin'
+
     if session.get('admin_logged_in'):
-        return redirect('/admin')
+        return redirect(next_target)
+
+    client_ip = get_client_ip()
+    locked, remaining = is_ip_locked(client_ip)
+    if locked:
+        mins = max(1, remaining // 60)
+        return render_template(
+            'admin_login.html',
+            error=f"Too many failed login attempts. Your IP has been temporarily locked out for security. Please try again in {mins} minute(s).",
+            next_target=next_target
+        ), 429
 
     error = None
     if request.method == 'POST':
@@ -394,19 +490,25 @@ def admin_login():
         admin_pass = os.environ.get('ADMIN_PASSWORD', 'admin@approtech2026')
 
         if username == admin_user and password == admin_pass:
+            clear_failed_logins(client_ip)
+            session.permanent = True
             session['admin_logged_in'] = True
             session['admin_user'] = username
-            return redirect('/admin')
+            return redirect(next_target)
         else:
-            error = 'Invalid admin credentials. Please verify your username and password.'
+            count = record_failed_login(client_ip)
+            remaining_tries = max(0, 5 - count)
+            if remaining_tries > 0:
+                error = f"Invalid admin credentials. {remaining_tries} attempt(s) remaining before temporary security lockout."
+            else:
+                error = "Too many failed login attempts. Your IP has been temporarily locked out for 10 minutes."
 
-    return render_template('admin_login.html', error=error)
+    return render_template('admin_login.html', error=error, next_target=next_target)
 
 @app.route('/admin/logout')
 def admin_logout():
-    """Logs out of the Admin Portal."""
-    session.pop('admin_logged_in', None)
-    session.pop('admin_user', None)
+    """Logs out of the Admin Portal securely."""
+    session.clear()
     return redirect('/admin/login')
 
 @app.route('/health')
@@ -516,6 +618,7 @@ def generate_qr(certificate_id):
 # ---------------------------------------------------------------------------
 
 @app.route('/api/batches', methods=['GET'])
+@admin_required
 def list_batches():
     conn = get_db()
     cur = conn.cursor()
@@ -533,6 +636,7 @@ def list_batches():
     return jsonify(batches)
 
 @app.route('/api/batches', methods=['POST'])
+@admin_required
 def create_batch():
     data = request.get_json() or {}
     batch_name = (data.get('batch_name') or '').strip()
@@ -563,6 +667,7 @@ def create_batch():
     return jsonify({'success': True, 'batch': new_batch}), 201
 
 @app.route('/api/batches/<int:batch_id>/toggle-email', methods=['POST'])
+@admin_required
 def toggle_batch_email(batch_id):
     conn = get_db()
     cur = conn.cursor()
@@ -583,6 +688,7 @@ def toggle_batch_email(batch_id):
 # ---------------------------------------------------------------------------
 
 @app.route('/api/batches/<int:batch_id>/students', methods=['GET'])
+@admin_required
 def get_batch_students(batch_id):
     conn = get_db()
     cur = conn.cursor()
@@ -647,6 +753,9 @@ def submit_student():
     if not (full_name and register_number and college_name and degree_branch and email and domain and start_date and end_date and project_title and phone_number):
         return jsonify({'error': 'All required fields must be provided.'}), 400
 
+    if len(full_name) > 120 or len(register_number) > 50 or len(email) > 120 or len(project_title) > 250 or len(phone_number) > 25:
+        return jsonify({'error': 'Field values exceed maximum permitted length.'}), 400
+
     conn = get_db()
     cur = conn.cursor()
 
@@ -690,6 +799,7 @@ def submit_student():
     }), 201
 
 @app.route('/api/students/<int:student_id>', methods=['GET'])
+@admin_required
 def get_student(student_id):
     conn = get_db()
     cur = conn.cursor()
@@ -709,6 +819,7 @@ def get_student(student_id):
     return jsonify(st)
 
 @app.route('/api/students/<int:student_id>', methods=['PUT'])
+@admin_required
 def update_student(student_id):
     """Admin edit student fields without losing Certificate ID or timestamps."""
     data = request.get_json() or {}
@@ -764,6 +875,7 @@ def update_student(student_id):
     return jsonify({'success': True, 'student': updated})
 
 @app.route('/api/students/<int:student_id>/approve', methods=['POST'])
+@admin_required
 def approve_student(student_id):
     """Admin approves student and generates permanent Certificate ID."""
     conn = get_db()
@@ -806,6 +918,7 @@ def approve_student(student_id):
     })
 
 @app.route('/api/students/<int:student_id>/generate-certificate', methods=['POST'])
+@admin_required
 def generate_certificate(student_id):
     """Admin generates certificate after approval."""
     conn = get_db()
@@ -839,6 +952,7 @@ def generate_certificate(student_id):
     })
 
 @app.route('/api/students/<int:student_id>/certificate', methods=['GET'])
+@admin_required
 def get_student_certificate(student_id):
     """Retrieves full certificate display model with verification URL."""
     conn = get_db()
@@ -869,6 +983,7 @@ def get_student_certificate(student_id):
     return jsonify(st)
 
 @app.route('/api/students/<int:student_id>/download-docx', methods=['GET'])
+@admin_required
 def download_student_docx(student_id):
     """Generates and serves a real .docx certificate file for a student."""
     conn = get_db()
@@ -933,6 +1048,7 @@ def download_docx_by_cert_id(certificate_id):
     )
 
 @app.route('/api/students/<int:student_id>/archive', methods=['POST'])
+@admin_required
 def archive_student(student_id):
     """Soft archives a student without destroying database data."""
     conn = get_db()
@@ -944,6 +1060,7 @@ def archive_student(student_id):
 
 @app.route('/api/students/<int:student_id>', methods=['DELETE'])
 @app.route('/api/students/<int:student_id>/delete', methods=['POST'])
+@admin_required
 def delete_student(student_id):
     """Removes a student record from the admin dashboard while preserving public QR verification."""
     conn = get_db()
