@@ -824,7 +824,7 @@
             <button type="button" class="btn-action-icon view-cert" title="Preview Certificate (PDF Match)" onclick="previewCertificate(${st.id})">
               <i class="fa-solid fa-award"></i>
             </button>
-            <button type="button" class="btn-action-icon qr" title="View QR Code" onclick="viewQrCode('${st.certificate_id}')">
+            <button type="button" class="btn-action-icon qr" title="View QR Code" onclick="viewQrCode('${st.uuid || st.certificate_id}', '${st.certificate_id || ''}')">
               <i class="fa-solid fa-qrcode"></i>
             </button>
           `;
@@ -1131,17 +1131,17 @@
       window.print();
     }
 
-    // QR Code Modal
-    function viewQrCode(certId) {
-      if (!certId || certId === 'None') {
+    // QR Code Modal (uses secure UUID token for QR & URL, displays formal Cert ID)
+    function viewQrCode(token, certId) {
+      if (!token || token === 'None') {
         alert('No Certificate ID generated yet.');
         return;
       }
-      const qrUrl = `/api/qr/${encodeURIComponent(certId)}`;
-      const verifyUrl = `${window.location.origin}/verify/${certId}`;
+      const qrUrl = `/api/qr/${encodeURIComponent(token)}`;
+      const verifyUrl = `${window.location.origin}/verify/${encodeURIComponent(token)}`;
 
       document.getElementById('qr-modal-img').src = qrUrl;
-      document.getElementById('qr-modal-cert-id').textContent = certId;
+      document.getElementById('qr-modal-cert-id').textContent = certId || token;
       document.getElementById('qr-modal-url').textContent = verifyUrl;
       document.getElementById('qr-modal-open-link').href = verifyUrl;
 

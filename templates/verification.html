@@ -51,7 +51,7 @@
               <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 2px;">
                 Certificate ID
               </div>
-              <div class="cert-id-tag">{{ certificate_id }}</div>
+              <div class="cert-id-tag">{{ student.certificate_id or certificate_id }}</div>
             </div>
             <div style="text-align: right; display: flex; align-items: center; gap: 10px;">
               <span class="status-badge generated">
@@ -225,8 +225,8 @@
             <i class="fa-solid fa-circle-xmark"></i>
           </div>
           <div class="status-banner-text">
-            <h2>Certificate Not Found</h2>
-            <p>We could not find any official Approtech certificate matching the provided ID: <strong>{{ certificate_id }}</strong>.</p>
+            <h2>{% if error_message %}Verification Rate Limited{% else %}Certificate Not Found{% endif %}</h2>
+            <p>{% if error_message %}{{ error_message }}{% else %}We could not find any official Approtech certificate matching the provided identifier: <strong>{{ certificate_id }}</strong>.{% endif %}</p>
           </div>
         </div>
 
@@ -237,7 +237,7 @@
 
           <form onsubmit="event.preventDefault(); const id = document.getElementById('search-cert-id').value.trim(); if(id) window.location.href='/verify/' + encodeURIComponent(id);">
             <div style="display: flex; gap: 8px;">
-              <input type="text" id="search-cert-id" placeholder="Enter Certificate ID to verify..." class="form-input" style="flex:1;" required />
+              <input type="text" id="search-cert-id" placeholder="Enter Certificate ID or Verification Token..." class="form-input" style="flex:1;" required />
               <button type="submit" class="btn-primary" style="padding: 0 20px;">
                 <i class="fa-solid fa-magnifying-glass"></i> Verify
               </button>

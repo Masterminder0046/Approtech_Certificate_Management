@@ -8,6 +8,7 @@ import os
 import io
 import sys
 import time
+import uuid
 import random
 import sqlite3
 import argparse
@@ -96,6 +97,20 @@ def record_failed_login(ip):
 def clear_failed_logins(ip):
     """Clears failed attempts counter upon successful authentication."""
     FAILED_LOGINS.pop(ip, None)
+
+VERIFY_RATE_LIMITS = {}  # ip -> list of timestamps
+
+def is_verify_rate_limited(ip):
+    """Limits verification lookups to 30 requests per minute per IP to prevent scraping."""
+    now = time.time()
+    window = 60
+    max_requests = 30
+    timestamps = VERIFY_RATE_LIMITS.setdefault(ip, [])
+    timestamps[:] = [t for t in timestamps if now - t < window]
+    if len(timestamps) >= max_requests:
+        return True
+    timestamps.append(now)
+    return False
 
 def is_safe_url(target):
     """
@@ -191,9 +206,23 @@ def init_db():
         certificate_generated INTEGER DEFAULT 0,
         submitted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         approved_at TIMESTAMP,
-        archived INTEGER DEFAULT 0
+        archived INTEGER DEFAULT 0,
+        uuid TEXT UNIQUE
     )
     ''')
+
+    # Migration / schema check for existing databases
+    cur.execute("PRAGMA table_info(students)")
+    existing_cols = [r['name'] for r in cur.fetchall()]
+    if 'uuid' not in existing_cols:
+        cur.execute("ALTER TABLE students ADD COLUMN uuid TEXT")
+
+    # Backfill missing UUIDs for existing rows
+    cur.execute("SELECT id FROM students WHERE uuid IS NULL OR uuid = ''")
+    for r in cur.fetchall():
+        cur.execute("UPDATE students SET uuid = ? WHERE id = ?", (str(uuid.uuid4()), r['id']))
+
+    cur.execute("CREATE INDEX IF NOT EXISTS idx_students_uuid ON students(uuid)")
 
     # Ensure default Approtech batch exists (check before inserting to prevent duplicate)
     cur.execute("SELECT id FROM batches WHERE batch_code = ?", ('APP26-27',))
@@ -357,9 +386,9 @@ def generate_certificate_docx(student, base_url):
     p4.paragraph_format.line_spacing = 1.35
     add_run(p4, "We extend our best wishes to continue success in all future endeavors.")
 
-    # Generate QR Code image
-    cert_id = student.get('certificate_id') or 'PENDING'
-    verification_url = f"{base_url.rstrip('/')}/verify/{cert_id}"
+    # Generate QR Code image using unguessable UUID token
+    verify_token = student.get('uuid') or student.get('certificate_id') or 'PENDING'
+    verification_url = f"{base_url.rstrip('/')}/verify/{verify_token}"
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_M,
@@ -543,7 +572,17 @@ def student_form(batch_code):
 
 @app.route('/verify/<path:certificate_id>')
 def verify_certificate(certificate_id):
-    """Public Certificate Verification Page - NO login required."""
+    """Public Certificate Verification Page - protected against scraping & IDOR."""
+    client_ip = get_client_ip()
+    if is_verify_rate_limited(client_ip):
+        return render_template(
+            'verification.html',
+            status='invalid',
+            certificate_id=certificate_id,
+            error_message="Too many verification requests. Please wait a moment before trying again."
+        ), 429
+
+    clean_id = certificate_id.strip()
     conn = get_db()
     cur = conn.cursor()
 
@@ -551,8 +590,8 @@ def verify_certificate(certificate_id):
         SELECT s.*, b.batch_code, b.batch_name
         FROM students s
         JOIN batches b ON s.batch_id = b.id
-        WHERE s.certificate_id = ?
-    ''', (certificate_id.strip(),))
+        WHERE s.uuid = ? OR s.certificate_id = ?
+    ''', (clean_id, clean_id))
     row = cur.fetchone()
     conn.close()
 
@@ -571,7 +610,7 @@ def verify_certificate(certificate_id):
         return render_template(
             'verification.html',
             status='pending',
-            certificate_id=certificate_id,
+            certificate_id=student.get('certificate_id') or certificate_id,
             student=student
         )
 
@@ -582,7 +621,7 @@ def verify_certificate(certificate_id):
     return render_template(
         'verification.html',
         status='verified',
-        certificate_id=certificate_id,
+        certificate_id=student.get('certificate_id') or certificate_id,
         student=student,
         duration=duration
     )
@@ -768,22 +807,24 @@ def submit_student():
         batch_row = cur.fetchone()
     batch_id = batch_row['id'] if batch_row else 1
 
+    student_uuid = str(uuid.uuid4())
+
     cur.execute('''
         INSERT INTO students (
             batch_id, full_name, register_number, college_name, degree_branch,
             state, email, domain, mode, internship_start_date, internship_end_date,
             project_title, phone_number, status, certificate_id,
-            certificate_generated, submitted_at, approved_at, archived
+            certificate_generated, submitted_at, approved_at, archived, uuid
         ) VALUES (
             ?, ?, ?, ?, ?,
             ?, ?, ?, ?, ?, ?,
             ?, ?, 'Pending', NULL,
-            0, datetime('now'), NULL, 0
+            0, datetime('now'), NULL, 0, ?
         )
     ''', (
         batch_id, full_name, register_number, college_name, degree_branch,
         state, email, domain, mode, start_date, end_date,
-        project_title, phone_number
+        project_title, phone_number, student_uuid
     ))
 
     new_id = cur.lastrowid
@@ -898,14 +939,16 @@ def approve_student(student_id):
         cert_id = generate_unique_certificate_id(student['batch_code'], conn)
 
     now_str = datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S')
+    student_uuid = student['uuid'] if ('uuid' in student.keys() and student['uuid']) else str(uuid.uuid4())
 
     cur.execute('''
         UPDATE students SET
             status = 'Approved',
             certificate_id = ?,
-            approved_at = ?
+            approved_at = ?,
+            uuid = ?
         WHERE id = ?
-    ''', (cert_id, now_str, student_id))
+    ''', (cert_id, now_str, student_uuid, student_id))
 
     conn.commit()
     conn.close()
@@ -914,7 +957,8 @@ def approve_student(student_id):
         'success': True,
         'status': 'Approved',
         'certificate_id': cert_id,
-        'approved_at': now_str
+        'approved_at': now_str,
+        'uuid': student_uuid
     })
 
 @app.route('/api/students/<int:student_id>/generate-certificate', methods=['POST'])
@@ -975,8 +1019,9 @@ def get_student_certificate(student_id):
     st['formatted_start_date'] = format_certificate_date(st.get('internship_start_date'))
     st['formatted_end_date'] = format_certificate_date(st.get('internship_end_date'))
     base_url = request.host_url.rstrip('/')
-    st['verification_url'] = f"{base_url}/verify/{st.get('certificate_id')}"
-    st['qr_api_url'] = f"{base_url}/api/qr/{st.get('certificate_id')}"
+    verify_token = st.get('uuid') or st.get('certificate_id')
+    st['verification_url'] = f"{base_url}/verify/{verify_token}"
+    st['qr_api_url'] = f"{base_url}/api/qr/{verify_token}"
     st['docx_url'] = f"{base_url}/api/students/{student_id}/download-docx"
     st['company_name'] = 'Approtech R&D Solutions Pvt. Ltd.'
 
@@ -1017,15 +1062,16 @@ def download_student_docx(student_id):
 
 @app.route('/download-docx/<path:certificate_id>', methods=['GET'])
 def download_docx_by_cert_id(certificate_id):
-    """Public direct .docx certificate download by Certificate ID."""
+    """Public direct .docx certificate download by Certificate ID or UUID."""
     conn = get_db()
     cur = conn.cursor()
+    clean_id = certificate_id.strip()
     cur.execute('''
         SELECT s.*, b.batch_code, b.batch_name
         FROM students s
         JOIN batches b ON s.batch_id = b.id
-        WHERE s.certificate_id = ?
-    ''', (certificate_id.strip(),))
+        WHERE s.uuid = ? OR s.certificate_id = ?
+    ''', (clean_id, clean_id))
     student = cur.fetchone()
     conn.close()
 
