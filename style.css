@@ -3546,8 +3546,8 @@ select:focus-visible {
   background: #FFFFFF;
   width: 100%;
   max-width: 680px;
-  min-height: 940px;
-  padding: 48px 56px;
+  min-height: 900px;
+  padding: 44px 52px;
   box-shadow: 0 10px 32px rgba(15, 23, 42, 0.12);
   border: 1px solid #E2E8F0;
   color: #000000;
@@ -3557,78 +3557,48 @@ select:focus-visible {
   box-sizing: border-box;
 }
 
-.pdf-cert-header {
-  text-align: center;
-  margin-bottom: 20px;
-}
-
-.pdf-cert-logo {
-  max-height: 64px;
-  width: auto;
-  max-width: 320px;
-  object-fit: contain;
-  display: inline-block;
-}
-
 .pdf-cert-title {
   font-family: 'Times New Roman', Times, serif;
-  font-size: 1.18rem;
+  font-size: 1.42rem;
   font-weight: 700;
   text-align: center;
   letter-spacing: 0.5px;
-  margin-bottom: 22px;
+  margin-bottom: 26px;
   color: #000000;
 }
 
 .pdf-cert-id {
   font-family: 'Times New Roman', Times, serif;
   font-size: 1.05rem;
-  font-weight: 700;
+  font-weight: 400;
   text-align: left;
-  margin-bottom: 22px;
+  margin-bottom: 26px;
   color: #000000;
 }
 
 .pdf-cert-concern {
   font-family: 'Times New Roman', Times, serif;
-  font-size: 0.98rem;
+  font-size: 1.1rem;
   font-weight: 700;
   text-align: center;
-  margin-bottom: 6px;
+  text-decoration: underline;
+  text-underline-offset: 5px;
+  margin-bottom: 26px;
   color: #000000;
-}
-
-.pdf-cert-underline {
-  width: 220px;
-  height: 1.2px;
-  background-color: #000000;
-  margin: 0 auto 20px;
 }
 
 .pdf-cert-paragraph {
   font-family: 'Times New Roman', Times, serif;
-  font-size: 1.02rem;
-  line-height: 1.58;
+  font-size: 1.05rem;
+  line-height: 1.5;
   color: #000000;
-  margin-bottom: 14px;
-  text-align: justify;
+  margin-bottom: 16px;
+  text-align: left;
 }
 
 .pdf-cert-paragraph strong {
   font-weight: 700;
   color: #000000;
-}
-
-.pdf-cert-project-title {
-  font-family: 'Times New Roman', Times, serif;
-  font-size: 1.04rem;
-  text-align: center;
-  margin: 10px 0 16px;
-  color: #000000;
-}
-
-.pdf-cert-project-title strong {
-  font-weight: 700;
 }
 
 .pdf-cert-footer-row {
@@ -3640,25 +3610,35 @@ select:focus-visible {
 }
 
 .pdf-cert-qr-container {
-  width: 110px;
+  width: 115px;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .pdf-cert-qr-image {
-  width: 100px;
-  height: 100px;
+  width: 105px;
+  height: 105px;
   display: block;
   image-rendering: pixelated;
 }
 
 .pdf-cert-qr-lbl {
   font-family: 'Times New Roman', Times, serif;
-  font-size: 0.65rem;
-  color: #475569;
+  font-size: 0.72rem;
+  color: #64748B;
   margin-top: 4px;
   text-align: center;
+  width: 100%;
+}
+
+.pdf-cert-qr-subid {
+  font-family: 'Times New Roman', Times, serif;
+  font-size: 0.72rem;
+  color: #64748B;
+  margin-top: 2px;
+  text-align: center;
+  width: 100%;
 }
 
 .pdf-cert-signature-container {
@@ -3667,14 +3647,14 @@ select:focus-visible {
 
 .pdf-cert-company-name {
   font-family: 'Times New Roman', Times, serif;
-  font-size: 1.02rem;
+  font-size: 1.04rem;
   color: #000000;
   margin-bottom: 50px;
 }
 
 .pdf-cert-signatory-name {
   font-family: 'Times New Roman', Times, serif;
-  font-size: 1.04rem;
+  font-size: 1.08rem;
   font-weight: 700;
   color: #000000;
 }
@@ -3712,59 +3692,107 @@ select:focus-visible {
   flex-wrap: wrap;
 }
 
-/* Print Handling */
+/* ==========================================================================
+   PRINT HANDLING - GUARANTEES SINGLE-PAGE OUTPUT WITH ZERO BLANK PAGES
+   ========================================================================== */
 @media print {
-  body {
-    background: #FFFFFF !important;
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm 12mm 15mm;
   }
-  .app-wrapper,
-  .admin-top-nav,
-  .admin-stats-grid,
-  .section-header-row,
-  .table-filter-bar,
-  .data-table-container,
-  .admin-modal-header,
-  .admin-modal-footer,
-  .admin-modal-overlay:not(#modal-certificate),
-  .bg-blob,
-  .bg-grid-overlay {
-    display: none !important;
-  }
-  #modal-certificate {
-    position: static !important;
-    background: transparent !important;
-    display: block !important;
+
+  html, body {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
     padding: 0 !important;
+    background: #FFFFFF !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
-  .admin-modal-dialog {
+
+  /* Completely hide all elements in body except modal-certificate */
+  body > *:not(#modal-certificate) {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Make modal-certificate the sole visible top-level in-flow element */
+  #modal-certificate {
+    display: block !important;
+    visibility: visible !important;
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #FFFFFF !important;
     box-shadow: none !important;
     border: none !important;
-    max-width: 100% !important;
-    width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-  .admin-modal-header,
-  .admin-modal-footer,
-  .admin-modal-close {
-    display: none !important;
-  }
-  .cert-modal-scroll-body {
-    background: #FFFFFF !important;
-    padding: 0 !important;
-    max-height: none !important;
     overflow: visible !important;
   }
-  .cert-print-wrapper {
-    padding: 0 !important;
-    margin: 0 !important;
+
+  #modal-certificate .admin-modal-header,
+  #modal-certificate .admin-modal-footer,
+  #modal-certificate .admin-modal-close {
+    display: none !important;
   }
-  .pdf-certificate-sheet {
+
+  #modal-certificate .admin-modal-dialog {
+    display: block !important;
     box-shadow: none !important;
     border: none !important;
-    padding: 30px 45px !important;
+    border-radius: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+
+  #modal-certificate .cert-modal-scroll-body,
+  #modal-certificate .cert-print-wrapper {
+    display: block !important;
+    background: #FFFFFF !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    max-height: none !important;
+    overflow: visible !important;
+    height: auto !important;
+  }
+
+  .pdf-certificate-sheet {
+    display: block !important;
+    box-sizing: border-box !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
-    page-break-inside: avoid;
+    min-height: 0 !important;
+    height: auto !important;
+    page-break-before: avoid !important;
+    page-break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-before: avoid !important;
+    break-inside: avoid !important;
+    break-after: avoid !important;
+  }
+
+  .pdf-cert-footer-row {
+    margin-top: 48px !important;
+    padding-top: 0 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
   }
 }

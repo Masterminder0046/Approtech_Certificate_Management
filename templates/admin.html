@@ -355,31 +355,25 @@
             <div class="pdf-cert-title">CERTIFICATE OF COMPLETION</div>
 
             <!-- Certificate ID -->
-            <div class="pdf-cert-id" id="cert-view-id">INT:APP26-27/2279-4644</div>
+            <div class="pdf-cert-id" id="cert-view-id">INT:APP26-27/2280-7670</div>
 
             <!-- Heading -->
             <div class="pdf-cert-concern">TO WHOMSOEVER IT MAY CONCERN</div>
-            <div class="pdf-cert-underline"></div>
 
             <!-- Body Paragraph 1 -->
             <p class="pdf-cert-paragraph">
-              This is to certify that <strong id="cert-view-name">Hemnath.R</strong>, Reg. No: <strong id="cert-view-regno">RA2431022020098</strong>, a student of <strong id="cert-view-college">SRM INSTITUTE OF SCIENCE AND TECHNOLOGY</strong> , pursuing <strong id="cert-view-degree">AI&ML/BSc</strong>, has successfully completed an Internship Program Through <strong id="cert-view-mode">ONLINE</strong> at our organization in the domain of <strong id="cert-view-domain">Full Stack Development (Python)</strong> ,
+              This is to certify that <strong id="cert-view-name">Jenitt B</strong> (Reg. No: <span id="cert-view-regno">2411</span>), a student of <strong id="cert-view-college">St Peter's college of engineering and technology Avadi Chennai</strong> pursuing <span id="cert-view-degree">BE/CSE</span>, has successfully completed an Internship Program Through <strong id="cert-view-mode">ONLINE</strong> at our organization in the domain of <strong id="cert-view-domain">Full Stack Development (Python)</strong>.
             </p>
 
             <!-- Body Paragraph 2 -->
             <p class="pdf-cert-paragraph">
-              The internship was undertaken from <strong id="cert-view-dates">10th August 2026 to 8th September 2026</strong>.
+              The internship was undertaken from <strong id="cert-view-start-date">16th September 2026</strong> to <strong id="cert-view-end-date">21st September 2026</strong>.
             </p>
 
             <!-- Body Paragraph 3 -->
             <p class="pdf-cert-paragraph">
-              During the course of the internship, the student exhibited commendable professional behaviour and technical proficiency, particularly in the project titled
+              During the course of the internship, the student exhibited commendable professional behaviour and technical proficiency, particularly in the project titled &ldquo;<strong id="cert-view-project">Developed a full stack web development for customer service and issue tracking using python</strong>&rdquo;.
             </p>
-
-            <!-- Project Box -->
-            <div class="pdf-cert-project-title">
-              &ldquo;<strong id="cert-view-project">FULL-Stack Movie Ticket Booking System Using Flask</strong>&rdquo;.
-            </div>
 
             <!-- Body Paragraph 4 -->
             <p class="pdf-cert-paragraph">
@@ -390,7 +384,8 @@
             <div class="pdf-cert-footer-row">
               <div class="pdf-cert-qr-container">
                 <img src="" alt="Verification QR Code" class="pdf-cert-qr-image" id="cert-view-qr-img" />
-                <div class="pdf-cert-qr-lbl">Scan to verify online</div>
+                <div class="pdf-cert-qr-lbl">Scan to Verify</div>
+                <div class="pdf-cert-qr-subid" id="cert-view-subid">INT:APP26-27/2280-7670</div>
               </div>
 
               <div class="pdf-cert-signature-container">
@@ -1112,9 +1107,11 @@
         document.getElementById('cert-view-degree').textContent = cert.degree_branch;
         document.getElementById('cert-view-domain').textContent = cert.domain;
         document.getElementById('cert-view-mode').textContent = (cert.mode || 'Online').toUpperCase();
-        document.getElementById('cert-view-dates').textContent = `${cert.formatted_start_date || cert.internship_start_date} to ${cert.formatted_end_date || cert.internship_end_date}`;
+        document.getElementById('cert-view-start-date').textContent = cert.formatted_start_date || cert.internship_start_date;
+        document.getElementById('cert-view-end-date').textContent = cert.formatted_end_date || cert.internship_end_date;
         document.getElementById('cert-view-project').textContent = cert.project_title;
         document.getElementById('cert-view-id').textContent = cert.certificate_id;
+        document.getElementById('cert-view-subid').textContent = cert.certificate_id;
         document.getElementById('cert-view-qr-img').src = cert.qr_api_url;
 
         // Set action URLs

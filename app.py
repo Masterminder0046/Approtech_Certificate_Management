@@ -293,10 +293,10 @@ def generate_certificate_docx(student, base_url):
     for section in doc.sections:
         section.page_width = Inches(8.27)
         section.page_height = Inches(11.69)
-        section.top_margin = Inches(0.8)
-        section.bottom_margin = Inches(0.8)
-        section.left_margin = Inches(1.0)
-        section.right_margin = Inches(1.0)
+        section.top_margin = Inches(0.75)
+        section.bottom_margin = Inches(0.55)
+        section.left_margin = Inches(0.85)
+        section.right_margin = Inches(0.85)
 
     # Certificate Title
     p_title = doc.add_paragraph()
@@ -306,18 +306,18 @@ def generate_certificate_docx(student, base_url):
     r_title = p_title.add_run("CERTIFICATE OF COMPLETION")
     r_title.bold = True
     r_title.font.name = "Times New Roman"
-    r_title.font.size = Pt(14)
+    r_title.font.size = Pt(15)
     r_title.font.color.rgb = RGBColor(0, 0, 0)
 
     # Certificate ID
     p_id = doc.add_paragraph()
     p_id.alignment = WD_ALIGN_PARAGRAPH.LEFT
     p_id.paragraph_format.space_before = Pt(0)
-    p_id.paragraph_format.space_after = Pt(20)
+    p_id.paragraph_format.space_after = Pt(18)
     r_id = p_id.add_run(student.get('certificate_id') or 'INT:APP26-27/0000-0000')
-    r_id.bold = True
+    r_id.bold = False
     r_id.font.name = "Times New Roman"
-    r_id.font.size = Pt(13.5)
+    r_id.font.size = Pt(11)
 
     # Subheading
     p_concern = doc.add_paragraph()
@@ -328,12 +328,12 @@ def generate_certificate_docx(student, base_url):
     r_concern.bold = True
     r_concern.underline = True
     r_concern.font.name = "Times New Roman"
-    r_concern.font.size = Pt(12)
+    r_concern.font.size = Pt(12.5)
 
     def add_run(p, text, bold=False):
         r = p.add_run(text)
         r.font.name = "Times New Roman"
-        r.font.size = Pt(13)
+        r.font.size = Pt(12)
         r.bold = bold
         return r
 
@@ -345,17 +345,15 @@ def generate_certificate_docx(student, base_url):
     p1.paragraph_format.line_spacing = 1.35
 
     add_run(p1, "This is to certify that ")
-    add_run(p1, f"{student.get('full_name')}, Reg. No: {student.get('register_number')}", bold=True)
-    add_run(p1, ", a student of ")
-    add_run(p1, f"{student.get('college_name')}", bold=True)
-    add_run(p1, " , pursuing ")
-    add_run(p1, f"{student.get('degree_branch')}", bold=True)
-    add_run(p1, ", has successfully completed an Internship Program Through ")
+    add_run(p1, f"{student.get('full_name')} ", bold=True)
+    add_run(p1, f"(Reg. No: {student.get('register_number')}), a student of ")
+    add_run(p1, f"{student.get('college_name')} ", bold=True)
+    add_run(p1, f"pursuing {student.get('degree_branch')}, has successfully completed an Internship Program Through ")
     mode_text = str(student.get('mode', 'Online')).strip().upper()
     add_run(p1, mode_text, bold=True)
     add_run(p1, " at our organization in the domain of ")
     add_run(p1, f"{student.get('domain')}", bold=True)
-    add_run(p1, " ,")
+    add_run(p1, ".")
 
     # Paragraph 2
     start_fmt = format_certificate_date(student.get('internship_start_date'))
@@ -366,7 +364,9 @@ def generate_certificate_docx(student, base_url):
     p2.paragraph_format.space_after = Pt(12)
     p2.paragraph_format.line_spacing = 1.35
     add_run(p2, "The internship was undertaken from ")
-    add_run(p2, f"{start_fmt} to {end_fmt}.", bold=True)
+    add_run(p2, f"{start_fmt} ", bold=True)
+    add_run(p2, "to ")
+    add_run(p2, f"{end_fmt}.", bold=True)
 
     # Paragraph 3
     p3 = doc.add_paragraph()
@@ -375,8 +375,7 @@ def generate_certificate_docx(student, base_url):
     p3.paragraph_format.space_after = Pt(12)
     p3.paragraph_format.line_spacing = 1.35
     add_run(p3, "During the course of the internship, the student exhibited commendable professional behaviour and technical proficiency, particularly in the project titled ")
-    add_run(p3, f"“{student.get('project_title')}”", bold=True)
-    add_run(p3, ".")
+    add_run(p3, f"“{student.get('project_title')}”.", bold=True)
 
     # Paragraph 4
     p4 = doc.add_paragraph()
@@ -407,8 +406,8 @@ def generate_certificate_docx(student, base_url):
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     table.autofit = False
 
-    table.columns[0].width = Inches(2.8)
-    table.columns[1].width = Inches(3.47)
+    table.columns[0].width = Inches(1.8)
+    table.columns[1].width = Inches(4.7)
 
     # Remove cell borders
     for row in table.rows:
@@ -420,11 +419,25 @@ def generate_certificate_docx(student, base_url):
     # Left cell: QR
     cell_qr = table.cell(0, 0)
     p_qr = cell_qr.paragraphs[0]
-    p_qr.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    p_qr.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p_qr.paragraph_format.space_before = Pt(0)
     p_qr.paragraph_format.space_after = Pt(0)
     run_qr = p_qr.add_run()
-    run_qr.add_picture(qr_buf, width=Inches(1.25), height=Inches(1.25))
+    run_qr.add_picture(qr_buf, width=Inches(1.15), height=Inches(1.15))
+
+    p_sub = cell_qr.add_paragraph()
+    p_sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    p_sub.paragraph_format.space_before = Pt(2)
+    p_sub.paragraph_format.space_after = Pt(0)
+    p_sub.paragraph_format.line_spacing = 1.15
+    r_scan = p_sub.add_run("Scan to Verify\n")
+    r_scan.font.name = "Times New Roman"
+    r_scan.font.size = Pt(8.5)
+    r_scan.font.color.rgb = RGBColor(110, 110, 110)
+    r_cid = p_sub.add_run(student.get('certificate_id') or '')
+    r_cid.font.name = "Times New Roman"
+    r_cid.font.size = Pt(8.5)
+    r_cid.font.color.rgb = RGBColor(110, 110, 110)
 
     # Right cell: Signatures
     cell_sig = table.cell(0, 1)
@@ -434,7 +447,7 @@ def generate_certificate_docx(student, base_url):
     p_for.paragraph_format.space_after = Pt(45)
     r_for = p_for.add_run("For Approtech R&D Solutions Pvt. Ltd.,")
     r_for.font.name = "Times New Roman"
-    r_for.font.size = Pt(13)
+    r_for.font.size = Pt(12)
 
     p_sign = cell_sig.add_paragraph()
     p_sign.alignment = WD_ALIGN_PARAGRAPH.RIGHT
@@ -443,7 +456,7 @@ def generate_certificate_docx(student, base_url):
     r_sign = p_sign.add_run("Authorized Signature")
     r_sign.bold = True
     r_sign.font.name = "Times New Roman"
-    r_sign.font.size = Pt(13)
+    r_sign.font.size = Pt(12.5)
 
     target_buf = io.BytesIO()
     doc.save(target_buf)
