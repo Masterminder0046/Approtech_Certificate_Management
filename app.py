@@ -427,17 +427,12 @@ def generate_certificate_docx(student, base_url):
 
     p_sub = cell_qr.add_paragraph()
     p_sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p_sub.paragraph_format.space_before = Pt(2)
+    p_sub.paragraph_format.space_before = Pt(4)
     p_sub.paragraph_format.space_after = Pt(0)
-    p_sub.paragraph_format.line_spacing = 1.15
-    r_scan = p_sub.add_run("Scan to Verify\n")
+    r_scan = p_sub.add_run("Scan to Verify")
     r_scan.font.name = "Times New Roman"
-    r_scan.font.size = Pt(8.5)
+    r_scan.font.size = Pt(9)
     r_scan.font.color.rgb = RGBColor(110, 110, 110)
-    r_cid = p_sub.add_run(student.get('certificate_id') or '')
-    r_cid.font.name = "Times New Roman"
-    r_cid.font.size = Pt(8.5)
-    r_cid.font.color.rgb = RGBColor(110, 110, 110)
 
     # Right cell: Signatures
     cell_sig = table.cell(0, 1)

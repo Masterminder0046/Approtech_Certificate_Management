@@ -3677,6 +3677,7 @@ select:focus-visible {
   display: flex;
   flex-direction: column;
   align-items: center;
+  text-align: center;
 }
 
 .pdf-cert-qr-image {
@@ -3684,24 +3685,17 @@ select:focus-visible {
   height: 105px;
   display: block;
   image-rendering: pixelated;
+  margin: 0 auto;
 }
 
 .pdf-cert-qr-lbl {
   font-family: 'Times New Roman', Times, serif;
-  font-size: 0.72rem;
+  font-size: 0.8rem;
   color: #64748B;
-  margin-top: 4px;
+  margin-top: 6px;
   text-align: center;
   width: 100%;
-}
-
-.pdf-cert-qr-subid {
-  font-family: 'Times New Roman', Times, serif;
-  font-size: 0.72rem;
-  color: #64748B;
-  margin-top: 2px;
-  text-align: center;
-  width: 100%;
+  white-space: nowrap;
 }
 
 .pdf-cert-signature-container {

@@ -393,7 +393,6 @@
               <div class="pdf-cert-qr-container">
                 <img src="" alt="Verification QR Code" class="pdf-cert-qr-image" id="cert-view-qr-img" />
                 <div class="pdf-cert-qr-lbl">Scan to Verify</div>
-                <div class="pdf-cert-qr-subid" id="cert-view-subid">INT:APP26-27/2280-7670</div>
               </div>
 
               <div class="pdf-cert-signature-container">
@@ -1119,7 +1118,6 @@
         document.getElementById('cert-view-end-date').textContent = cert.formatted_end_date || cert.internship_end_date;
         document.getElementById('cert-view-project').textContent = cert.project_title;
         document.getElementById('cert-view-id').textContent = cert.certificate_id;
-        document.getElementById('cert-view-subid').textContent = cert.certificate_id;
         document.getElementById('cert-view-qr-img').src = cert.qr_api_url;
 
         // Set action URLs
