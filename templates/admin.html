@@ -58,10 +58,6 @@
           </button>
         </div>
 
-        <a href="/student-form/APP26-27" target="_blank" class="btn-primary" style="text-decoration:none; padding: 8px 16px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px;">
-          <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Student Portal
-        </a>
-
         <a href="/admin/logout" class="btn-secondary" style="text-decoration:none; padding: 8px 14px; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px; color: #EF4444;" title="Sign out of Admin Portal">
           <i class="fa-solid fa-right-from-bracket"></i> Logout
         </a>
@@ -370,7 +366,7 @@
 
             <!-- Body Paragraph 1 -->
             <p class="pdf-cert-paragraph">
-              This is to certify that <strong id="cert-view-name">Jenitt B</strong> (Reg. No: <span id="cert-view-regno">2411</span>), a student of <strong id="cert-view-college">St Peter's college of engineering and technology Avadi Chennai</strong> pursuing <span id="cert-view-degree">BE/CSE</span>, has successfully completed an Internship Program Through <strong id="cert-view-mode">ONLINE</strong> at our organization in the domain of <strong id="cert-view-domain">Full Stack Development (Python)</strong>.
+              This is to certify that <strong id="cert-view-name">Jenitt B</strong> , (Reg. No: <span id="cert-view-regno">2411</span>), a student of <strong id="cert-view-college">St Peter's college of engineering and technology Avadi Chennai</strong> pursuing <span id="cert-view-degree">BE/CSE</span>, has successfully completed an Internship Program Through <strong id="cert-view-mode">ONLINE</strong> at our organization in the domain of <strong id="cert-view-domain">Full Stack Development (Python)</strong>.
             </p>
 
             <!-- Body Paragraph 2 -->
@@ -614,6 +610,14 @@
         const select = document.getElementById('batch-filter-select');
         select.innerHTML = '';
 
+        if ((!currentBatchId || !batches.some(b => b.id === currentBatchId)) && batches.length > 0) {
+          currentBatchId = batches[0].id;
+        }
+
+        if (batches.length === 0) {
+          grid.innerHTML = '<div style="grid-column: 1/-1; padding: 48px 24px; text-align: center; color: var(--muted); background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius-md);"><i class="fa-solid fa-folder-open" style="font-size: 2.5rem; margin-bottom: 12px; display: block; opacity: 0.5;"></i>No batches found. Click "+ Create Batch" to add a new batch.</div>';
+        }
+
         batches.forEach(b => {
           totalSubmissions += (b.student_count || 0);
           pendingCount += (b.pending_count || 0);
@@ -672,11 +676,14 @@
 
               <div class="batch-btns-split">
                 <button type="button" class="btn-batch-action primary" onclick="viewBatchStudents(${b.id})">
-                  <i class="fa-solid fa-table-list"></i> View Submissions
+                  <i class="fa-solid fa-table-list"></i> Submissions
                 </button>
                 <a href="/student-form/${b.batch_code}" target="_blank" class="btn-batch-action">
                   <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Form
                 </a>
+                <button type="button" class="btn-batch-action danger" onclick="deleteBatch(${b.id}, '${b.batch_code}', '${(b.batch_name || '').replace(/'/g, "\\'")}')" title="Delete Batch">
+                  <i class="fa-solid fa-trash-can"></i> Delete
+                </button>
               </div>
             </div>
           `;
@@ -713,6 +720,39 @@
         btn.innerHTML = '<i class="fa-solid fa-check"></i> Copied!';
         setTimeout(() => { btn.innerHTML = orig; }, 1800);
       });
+    }
+
+    async function deleteBatch(batchId, batchCode, batchName) {
+      const confirmMsg = `Are you sure you want to permanently delete Batch "${batchCode} - ${batchName}"?\n\nWARNING: All student submissions under this batch will also be permanently deleted. This action cannot be undone.`;
+      if (!confirm(confirmMsg)) return;
+
+      try {
+        const res = await fetch(`/api/batches/${batchId}`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          if (currentBatchId === batchId) {
+            currentBatchId = null;
+          }
+          await loadBatchesAndMetrics();
+          if (globalBatches && globalBatches.length > 0) {
+            currentBatchId = globalBatches[0].id;
+            const sel = document.getElementById('batch-filter-select');
+            if (sel) sel.value = currentBatchId;
+            loadStudentsForBatch(currentBatchId);
+          } else {
+            const tbody = document.getElementById('students-tbody');
+            if (tbody) tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-muted">No batches available</td></tr>';
+          }
+        } else {
+          alert(data.error || 'Failed to delete batch');
+        }
+      } catch (err) {
+        console.error('Error deleting batch:', err);
+        alert('Network error while deleting batch');
+      }
     }
 
     // Load Students for Batch

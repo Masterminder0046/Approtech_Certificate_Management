@@ -2260,10 +2260,12 @@ body {
 .batch-btns-split {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .btn-batch-action {
   flex: 1;
+  min-width: 100px;
   padding: 8px 12px;
   border-radius: var(--radius-sm);
   font-size: 0.82rem;
@@ -2293,6 +2295,18 @@ body {
 
 .btn-batch-action.primary:hover {
   background: #1D4ED8;
+}
+
+.btn-batch-action.danger {
+  background: var(--surface);
+  color: #EF4444;
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.btn-batch-action.danger:hover {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: #EF4444;
+  color: #DC2626;
 }
 
 /* Student Submissions Table Controls */
@@ -3633,7 +3647,7 @@ select:focus-visible {
 .pdf-cert-id {
   font-family: 'Times New Roman', Times, serif;
   font-size: 1.05rem;
-  font-weight: 400;
+  font-weight: 700;
   text-align: left;
   margin-bottom: 26px;
   color: #000000;

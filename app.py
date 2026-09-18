@@ -315,7 +315,7 @@ def generate_certificate_docx(student, base_url):
     p_id.paragraph_format.space_before = Pt(0)
     p_id.paragraph_format.space_after = Pt(18)
     r_id = p_id.add_run(student.get('certificate_id') or 'INT:APP26-27/0000-0000')
-    r_id.bold = False
+    r_id.bold = True
     r_id.font.name = "Times New Roman"
     r_id.font.size = Pt(11)
 
@@ -345,10 +345,10 @@ def generate_certificate_docx(student, base_url):
     p1.paragraph_format.line_spacing = 1.35
 
     add_run(p1, "This is to certify that ")
-    add_run(p1, f"{student.get('full_name')} ", bold=True)
-    add_run(p1, f"(Reg. No: {student.get('register_number')}), a student of ")
-    add_run(p1, f"{student.get('college_name')} ", bold=True)
-    add_run(p1, f"pursuing {student.get('degree_branch')}, has successfully completed an Internship Program Through ")
+    add_run(p1, f"{student.get('full_name')}", bold=True)
+    add_run(p1, f" , (Reg. No: {student.get('register_number')}), a student of ")
+    add_run(p1, f"{student.get('college_name')}", bold=True)
+    add_run(p1, f" pursuing {student.get('degree_branch')}, has successfully completed an Internship Program Through ")
     mode_text = str(student.get('mode', 'Online')).strip().upper()
     add_run(p1, mode_text, bold=True)
     add_run(p1, " at our organization in the domain of ")
@@ -364,9 +364,10 @@ def generate_certificate_docx(student, base_url):
     p2.paragraph_format.space_after = Pt(12)
     p2.paragraph_format.line_spacing = 1.35
     add_run(p2, "The internship was undertaken from ")
-    add_run(p2, f"{start_fmt} ", bold=True)
-    add_run(p2, "to ")
-    add_run(p2, f"{end_fmt}.", bold=True)
+    add_run(p2, f"{start_fmt}", bold=True)
+    add_run(p2, " to ")
+    add_run(p2, f"{end_fmt}", bold=True)
+    add_run(p2, ".")
 
     # Paragraph 3
     p3 = doc.add_paragraph()
@@ -374,8 +375,9 @@ def generate_certificate_docx(student, base_url):
     p3.paragraph_format.space_before = Pt(0)
     p3.paragraph_format.space_after = Pt(12)
     p3.paragraph_format.line_spacing = 1.35
-    add_run(p3, "During the course of the internship, the student exhibited commendable professional behaviour and technical proficiency, particularly in the project titled ")
-    add_run(p3, f"“{student.get('project_title')}”.", bold=True)
+    add_run(p3, "During the course of the internship, the student exhibited commendable professional behaviour and technical proficiency, particularly in the project titled “")
+    add_run(p3, f"{student.get('project_title')}", bold=True)
+    add_run(p3, "”.")
 
     # Paragraph 4
     p4 = doc.add_paragraph()
@@ -733,6 +735,27 @@ def toggle_batch_email(batch_id):
     conn.commit()
     conn.close()
     return jsonify({'success': True, 'email_enabled': new_val})
+
+@app.route('/api/batches/<int:batch_id>', methods=['DELETE'])
+@app.route('/api/batches/<int:batch_id>/delete', methods=['POST'])
+@admin_required
+def delete_batch(batch_id):
+    """Deletes a batch and cascades deletion of its associated students."""
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute("SELECT id, batch_code, batch_name FROM batches WHERE id = ?", (batch_id,))
+    batch = cur.fetchone()
+    if not batch:
+        conn.close()
+        return jsonify({'error': 'Batch not found'}), 404
+
+    batch_code = batch['batch_code']
+    cur.execute("DELETE FROM students WHERE batch_id = ?", (batch_id,))
+    cur.execute("DELETE FROM batches WHERE id = ?", (batch_id,))
+    conn.commit()
+    conn.close()
+    return jsonify({'success': True, 'message': f"Batch '{batch_code}' and associated records deleted."})
+
 
 # ---------------------------------------------------------------------------
 # API: STUDENTS
