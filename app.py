@@ -509,7 +509,7 @@ def generate_certificate_pdf(student, base_url):
     )
     signature_cell = [
         Paragraph("For Approtech R&amp;D Solutions Pvt. Ltd.,", organization_style),
-        Spacer(1, 0.72 * rl_inch),
+        Spacer(1, 1.2 * rl_inch),
         Paragraph("Authorized Signature", signature_style)
     ]
 
@@ -704,7 +704,7 @@ def generate_certificate_docx(student, base_url):
     p_for = cell_sig.paragraphs[0]
     p_for.alignment = WD_ALIGN_PARAGRAPH.RIGHT
     p_for.paragraph_format.space_before = Pt(0)
-    p_for.paragraph_format.space_after = Pt(45)
+    p_for.paragraph_format.space_after = Pt(85)
     r_for = p_for.add_run("For Approtech R&D Solutions Pvt. Ltd.,")
     r_for.font.name = "Times New Roman"
     r_for.font.size = Pt(12)
