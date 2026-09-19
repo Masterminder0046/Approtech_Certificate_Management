@@ -596,7 +596,6 @@ def generate_certificate_docx(student, base_url):
     p_concern.paragraph_format.space_after = Pt(18)
     r_concern = p_concern.add_run("TO WHOMSOEVER IT MAY CONCERN")
     r_concern.bold = True
-    r_concern.underline = True
     r_concern.font.name = "Times New Roman"
     r_concern.font.size = Pt(12.5)
 
@@ -609,7 +608,7 @@ def generate_certificate_docx(student, base_url):
 
     # Paragraph 1
     p1 = doc.add_paragraph()
-    p1.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    p1.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     p1.paragraph_format.space_before = Pt(0)
     p1.paragraph_format.space_after = Pt(12)
     p1.paragraph_format.line_spacing = 1.35
@@ -630,7 +629,7 @@ def generate_certificate_docx(student, base_url):
     start_fmt = format_certificate_date(student.get('internship_start_date'))
     end_fmt = format_certificate_date(student.get('internship_end_date'))
     p2 = doc.add_paragraph()
-    p2.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    p2.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     p2.paragraph_format.space_before = Pt(0)
     p2.paragraph_format.space_after = Pt(12)
     p2.paragraph_format.line_spacing = 1.35
@@ -642,7 +641,7 @@ def generate_certificate_docx(student, base_url):
 
     # Paragraph 3
     p3 = doc.add_paragraph()
-    p3.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    p3.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     p3.paragraph_format.space_before = Pt(0)
     p3.paragraph_format.space_after = Pt(12)
     p3.paragraph_format.line_spacing = 1.35
@@ -652,7 +651,7 @@ def generate_certificate_docx(student, base_url):
 
     # Paragraph 4
     p4 = doc.add_paragraph()
-    p4.alignment = WD_ALIGN_PARAGRAPH.LEFT
+    p4.alignment = WD_ALIGN_PARAGRAPH.JUSTIFY
     p4.paragraph_format.space_before = Pt(0)
     p4.paragraph_format.space_after = Pt(28)
     p4.paragraph_format.line_spacing = 1.35
@@ -669,7 +668,7 @@ def generate_certificate_docx(student, base_url):
     )
     qr.add_data(verification_url)
     qr.make(fit=True)
-    qr_img = qr.make_image(fill_color="#0F172A", back_color="#FFFFFF")
+    qr_img = qr.make_image(fill_color="#000000", back_color="#FFFFFF")
     qr_buf = io.BytesIO()
     qr_img.save(qr_buf, format='PNG')
     qr_buf.seek(0)
@@ -679,8 +678,8 @@ def generate_certificate_docx(student, base_url):
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     table.autofit = False
 
-    table.columns[0].width = Inches(1.8)
-    table.columns[1].width = Inches(4.7)
+    table.columns[0].width = Inches(1.65)
+    table.columns[1].width = Inches(4.92)
 
     # Remove cell borders
     for row in table.rows:
@@ -691,16 +690,17 @@ def generate_certificate_docx(student, base_url):
 
     # Left cell: QR
     cell_qr = table.cell(0, 0)
+    cell_qr.width = Inches(1.65)
     p_qr = cell_qr.paragraphs[0]
     p_qr.alignment = WD_ALIGN_PARAGRAPH.CENTER
     p_qr.paragraph_format.space_before = Pt(0)
     p_qr.paragraph_format.space_after = Pt(0)
     run_qr = p_qr.add_run()
-    run_qr.add_picture(qr_buf, width=Inches(1.15), height=Inches(1.15))
+    run_qr.add_picture(qr_buf, width=Inches(1.05), height=Inches(1.05))
 
     p_sub = cell_qr.add_paragraph()
     p_sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    p_sub.paragraph_format.space_before = Pt(4)
+    p_sub.paragraph_format.space_before = Pt(3)
     p_sub.paragraph_format.space_after = Pt(0)
     r_scan = p_sub.add_run("Scan to Verify")
     r_scan.font.name = "Times New Roman"
