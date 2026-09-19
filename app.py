@@ -38,6 +38,9 @@ from reportlab.lib.units import inch as rl_inch
 from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_JUSTIFY, TA_RIGHT
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.platypus import (
+    BaseDocTemplate,
+    PageTemplate,
+    Frame,
     SimpleDocTemplate,
     Paragraph,
     Spacer,
@@ -332,18 +335,37 @@ def generate_certificate_pdf(student, base_url):
 
     # Page setup: A4 Portrait
     PAGE_WIDTH, PAGE_HEIGHT = RL_A4
-    doc = SimpleDocTemplate(
+    left_margin = 0.85 * rl_inch
+    right_margin = 0.85 * rl_inch
+    top_margin = 0.55 * rl_inch
+    bottom_margin = 0.50 * rl_inch
+
+    doc = BaseDocTemplate(
         output,
         pagesize=RL_A4,
-        leftMargin=0.85 * rl_inch,
-        rightMargin=0.85 * rl_inch,
-        topMargin=0.55 * rl_inch,
-        bottomMargin=0.50 * rl_inch,
+        leftMargin=left_margin,
+        rightMargin=right_margin,
+        topMargin=top_margin,
+        bottomMargin=bottom_margin,
         title="Certificate of Completion",
         author="Approtech R&D Solutions Pvt. Ltd."
     )
 
-    CERTIFICATE_WIDTH = 6.55 * rl_inch
+    # Frame with 0 padding ensures all paragraphs and tables align to the exact same margin
+    frame = Frame(
+        doc.leftMargin,
+        doc.bottomMargin,
+        doc.width,
+        doc.height,
+        id="normal",
+        leftPadding=0,
+        rightPadding=0,
+        topPadding=0,
+        bottomPadding=0
+    )
+    doc.addPageTemplates([PageTemplate(id="CertificatePage", frames=frame, pagesize=RL_A4)])
+
+    CERTIFICATE_WIDTH = doc.width
 
     title_style = ParagraphStyle(
         "CertificateTitle",
@@ -401,19 +423,19 @@ def generate_certificate_pdf(student, base_url):
     story.append(Paragraph("CERTIFICATE OF COMPLETION", title_style))
 
     # Certificate ID
-    certificate_id = escape_text(student.get("certificate_id", "INT:APP26-27/0000-0000"))
+    certificate_id = escape_text(student.get("certificate_id", "INT:APP26-27/0000-0000").strip())
     story.append(Paragraph(certificate_id, certificate_id_style))
 
     # To Whomsoever
     story.append(Paragraph("TO WHOMSOEVER IT MAY CONCERN", heading_style))
 
     # Student data
-    name = escape_text(student.get("full_name", ""))
-    register_number = escape_text(student.get("register_number", ""))
-    college = escape_text(student.get("college_name", ""))
-    degree = escape_text(student.get("degree_branch", ""))
+    name = escape_text(student.get("full_name", "").strip())
+    register_number = escape_text(student.get("register_number", "").strip())
+    college = escape_text(student.get("college_name", "").strip())
+    degree = escape_text(student.get("degree_branch", "").strip())
     mode = escape_text(str(student.get("mode", "Online")).strip().upper())
-    domain = escape_text(student.get("domain", ""))
+    domain = escape_text(student.get("domain", "").strip())
 
     # Paragraph 1
     paragraph_1 = (
@@ -436,14 +458,14 @@ def generate_certificate_pdf(student, base_url):
     end_date = format_certificate_date(student.get("internship_end_date"))
     paragraph_2 = (
         "The internship was undertaken from "
-        f"<b>{escape_text(start_date)}</b> "
+        f"<b>{escape_text(start_date.strip())}</b> "
         "to "
-        f"<b>{escape_text(end_date)}</b>."
+        f"<b>{escape_text(end_date.strip())}</b>."
     )
     story.append(Paragraph(paragraph_2, body_style))
 
     # Project title
-    project_title = escape_text(student.get("project_title", ""))
+    project_title = escape_text(student.get("project_title", "").strip())
     paragraph_3 = (
         "During the course of the internship, "
         "the student exhibited commendable "
@@ -527,21 +549,7 @@ def generate_certificate_pdf(student, base_url):
             ("BOTTOMPADDING", (0, 0), (-1, -1), 0)
         ])
     )
-
-    centered_footer = Table(
-        [[footer_table]],
-        colWidths=[CERTIFICATE_WIDTH],
-        hAlign="CENTER"
-    )
-    centered_footer.setStyle(
-        TableStyle([
-            ("LEFTPADDING", (0, 0), (-1, -1), 0),
-            ("RIGHTPADDING", (0, 0), (-1, -1), 0),
-            ("TOPPADDING", (0, 0), (-1, -1), 0),
-            ("BOTTOMPADDING", (0, 0), (-1, -1), 0)
-        ])
-    )
-    story.append(centered_footer)
+    story.append(footer_table)
 
     doc.build(story)
     output.seek(0)
