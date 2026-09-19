@@ -12,6 +12,7 @@ import uuid
 import random
 import sqlite3
 import argparse
+import re
 from datetime import datetime, timezone, timedelta
 from functools import wraps
 from urllib.parse import urlparse, urljoin
@@ -328,6 +329,26 @@ def escape_text(value):
     value = value.replace("<", "&lt;")
     value = value.replace(">", "&gt;")
     return value
+
+def get_certificate_download_filename(student, extension="pdf"):
+    """
+    Generates a clean, filesystem-safe download filename containing:
+    <Student_Name>_<Certificate_ID>.<extension>
+    e.g. Jenitt_B_INT-APP26-27-2283-6232.pdf
+    """
+    raw_name = (student.get('full_name') or 'Student').strip()
+    raw_id = (student.get('certificate_id') or 'CERT').strip()
+
+    # Clean student name: keep alphanumeric, underscore, hyphen, and replace spaces with underscore
+    clean_name = re.sub(r'[^\w\s-]', '', raw_name)
+    clean_name = re.sub(r'[\s]+', '_', clean_name).strip('_') or 'Student'
+
+    # Clean certificate ID: replace colons and slashes with hyphens
+    clean_id = raw_id.replace(':', '-').replace('/', '-').replace('\\', '-')
+    clean_id = re.sub(r'[^a-zA-Z0-9_-]', '_', clean_id).strip('-_') or 'CERT'
+
+    clean_ext = extension.lstrip('.')
+    return f"{clean_name}_{clean_id}.{clean_ext}"
 
 def generate_certificate_pdf(student, base_url):
     """Generates official Certificate PDF matching user specification using ReportLab."""
@@ -1360,8 +1381,7 @@ def download_student_pdf(student_id):
 
     base_url = request.host_url.rstrip('/')
     buf = generate_certificate_pdf(st, base_url)
-    clean_id = (st.get('certificate_id') or 'CERT').replace(':', '_').replace('/', '_')
-    filename = f"Approtech_Certificate_{clean_id}.pdf"
+    filename = get_certificate_download_filename(st, extension='pdf')
     return send_file(
         buf,
         as_attachment=True,
@@ -1393,8 +1413,7 @@ def download_pdf_by_cert_id(certificate_id):
 
     base_url = request.host_url.rstrip('/')
     buf = generate_certificate_pdf(st, base_url)
-    clean_id = certificate_id.replace(':', '_').replace('/', '_')
-    filename = f"Approtech_Certificate_{clean_id}.pdf"
+    filename = get_certificate_download_filename(st, extension='pdf')
     return send_file(
         buf,
         as_attachment=True,
@@ -1426,8 +1445,7 @@ def download_student_docx(student_id):
 
     base_url = request.host_url.rstrip('/')
     buf = generate_certificate_docx(st, base_url)
-    clean_id = (st.get('certificate_id') or 'CERT').replace(':', '_').replace('/', '_')
-    filename = f"Approtech_Certificate_{clean_id}.docx"
+    filename = get_certificate_download_filename(st, extension='docx')
     return send_file(
         buf,
         as_attachment=True,
@@ -1459,8 +1477,7 @@ def download_docx_by_cert_id(certificate_id):
 
     base_url = request.host_url.rstrip('/')
     buf = generate_certificate_docx(st, base_url)
-    clean_id = certificate_id.replace(':', '_').replace('/', '_')
-    filename = f"Approtech_Certificate_{clean_id}.docx"
+    filename = get_certificate_download_filename(st, extension='docx')
     return send_file(
         buf,
         as_attachment=True,
