@@ -444,7 +444,7 @@ def generate_certificate_pdf(student, base_url):
         f"<b>Reg. No: {register_number}</b>, "
         "a student of "
         f"<b>{college}</b>, "
-        f"pursuing {degree}, "
+        f"pursuing <b>{degree}</b>, "
         "has successfully completed an "
         "Internship Program Through "
         f"<b>{mode}</b> "
@@ -618,7 +618,9 @@ def generate_certificate_docx(student, base_url):
     add_run(p1, f"Reg. No: {student.get('register_number')}, ", bold=True)
     add_run(p1, "a student of ")
     add_run(p1, f"{student.get('college_name')}, ", bold=True)
-    add_run(p1, f"pursuing {student.get('degree_branch')}, has successfully completed an Internship Program Through ")
+    add_run(p1, "pursuing ")
+    add_run(p1, f"{student.get('degree_branch')}, ", bold=True)
+    add_run(p1, "has successfully completed an Internship Program Through ")
     mode_text = str(student.get('mode', 'Online')).strip().upper()
     add_run(p1, mode_text, bold=True)
     add_run(p1, " at our organization in the domain of ")
