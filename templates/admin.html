@@ -366,7 +366,7 @@
 
             <!-- Body Paragraph 1 -->
             <p class="pdf-cert-paragraph">
-              This is to certify that <strong id="cert-view-name">Jenitt B</strong> , (Reg. No: <span id="cert-view-regno">2411</span>), a student of <strong id="cert-view-college">St Peter's college of engineering and technology Avadi Chennai</strong> pursuing <span id="cert-view-degree">BE/CSE</span>, has successfully completed an Internship Program Through <strong id="cert-view-mode">ONLINE</strong> at our organization in the domain of <strong id="cert-view-domain">Full Stack Development (Python)</strong>.
+              This is to certify that <strong id="cert-view-name">Jenitt B</strong>, <strong>Reg. No: <span id="cert-view-regno">2411</span></strong>, a student of <strong id="cert-view-college">St Peter's college of engineering and technology Avadi Chennai</strong>, pursuing <span id="cert-view-degree">BE/CSE</span>, has successfully completed an Internship Program Through <strong id="cert-view-mode">ONLINE</strong> at our organization in the domain of <strong id="cert-view-domain">Full Stack Development (Python)</strong>.
             </p>
 
             <!-- Body Paragraph 2 -->
@@ -409,11 +409,14 @@
         <a id="btn-modal-verify-link" href="#" target="_blank" class="btn-secondary" style="text-decoration:none;">
           <i class="fa-solid fa-arrow-up-right-from-square"></i> Public Verification
         </a>
+        <a id="btn-modal-download-pdf" href="#" class="btn-primary" style="text-decoration:none;">
+          <i class="fa-solid fa-file-pdf"></i> Download .PDF
+        </a>
         <a id="btn-modal-download-docx" href="#" class="btn-docx" style="text-decoration:none;">
           <i class="fa-solid fa-file-word"></i> Download .DOCX
         </a>
-        <button type="button" class="btn-primary" onclick="printCertificate()">
-          <i class="fa-solid fa-print"></i> Print / PDF
+        <button type="button" class="btn-secondary" onclick="printCertificate()">
+          <i class="fa-solid fa-print"></i> Print
         </button>
       </div>
     </div>
@@ -1161,6 +1164,7 @@
         document.getElementById('cert-view-qr-img').src = cert.qr_api_url;
 
         // Set action URLs
+        document.getElementById('btn-modal-download-pdf').href = `/api/students/${studentId}/download-pdf`;
         document.getElementById('btn-modal-download-docx').href = `/api/students/${studentId}/download-docx`;
         document.getElementById('btn-modal-verify-link').href = cert.verification_url;
 

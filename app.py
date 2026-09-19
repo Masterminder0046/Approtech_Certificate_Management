@@ -33,7 +33,38 @@ from docx.enum.text import WD_ALIGN_PARAGRAPH
 from docx.enum.table import WD_TABLE_ALIGNMENT
 from docx.oxml import parse_xml
 from docx.oxml.ns import nsdecls
+from reportlab.lib.pagesizes import A4 as RL_A4
+from reportlab.lib.units import inch as rl_inch
+from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_JUSTIFY, TA_RIGHT
+from reportlab.lib.styles import ParagraphStyle
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Paragraph,
+    Spacer,
+    Table,
+    TableStyle,
+    Image as RLImage
+)
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.pdfbase import pdfmetrics
+from reportlab.lib import colors
 import shutil
+
+# Font setup for Certificate PDF with cross-platform fallback
+try:
+    pdfmetrics.registerFont(TTFont("TimesNewRoman", r"C:\Windows\Fonts\times.ttf"))
+    pdfmetrics.registerFont(TTFont("TimesNewRoman-Bold", r"C:\Windows\Fonts\timesbd.ttf"))
+    try:
+        from reportlab.pdfbase.pdfmetrics import registerFontFamily
+        registerFontFamily("TimesNewRoman", normal="TimesNewRoman", bold="TimesNewRoman-Bold")
+    except Exception:
+        pass
+    FONT_NORMAL = "TimesNewRoman"
+    FONT_BOLD = "TimesNewRoman-Bold"
+except Exception:
+    FONT_NORMAL = "Times-Roman"
+    FONT_BOLD = "Times-Bold"
+
 
 # Serverless (Vercel) / Read-only environment SQLite support
 if os.environ.get('VERCEL') or not os.access(os.path.dirname(os.path.abspath(__file__)), os.W_OK):
@@ -285,6 +316,237 @@ def format_certificate_date(date_str):
     except Exception:
         return str(date_str)
 
+def escape_text(value):
+    """Escapes XML entities for ReportLab Paragraph markup."""
+    if value is None:
+        return ""
+    value = str(value)
+    value = value.replace("&", "&amp;")
+    value = value.replace("<", "&lt;")
+    value = value.replace(">", "&gt;")
+    return value
+
+def generate_certificate_pdf(student, base_url):
+    """Generates official Certificate PDF matching user specification using ReportLab."""
+    output = io.BytesIO()
+
+    # Page setup: A4 Portrait
+    PAGE_WIDTH, PAGE_HEIGHT = RL_A4
+    doc = SimpleDocTemplate(
+        output,
+        pagesize=RL_A4,
+        leftMargin=0.85 * rl_inch,
+        rightMargin=0.85 * rl_inch,
+        topMargin=0.55 * rl_inch,
+        bottomMargin=0.50 * rl_inch,
+        title="Certificate of Completion",
+        author="Approtech R&D Solutions Pvt. Ltd."
+    )
+
+    CERTIFICATE_WIDTH = 6.55 * rl_inch
+
+    title_style = ParagraphStyle(
+        "CertificateTitle",
+        fontName=FONT_BOLD,
+        fontSize=15,
+        leading=18,
+        alignment=TA_CENTER,
+        spaceBefore=0,
+        spaceAfter=15
+    )
+
+    certificate_id_style = ParagraphStyle(
+        "CertificateID",
+        fontName=FONT_BOLD,
+        fontSize=11,
+        leading=14,
+        alignment=TA_LEFT,
+        spaceBefore=0,
+        spaceAfter=17
+    )
+
+    heading_style = ParagraphStyle(
+        "Heading",
+        fontName=FONT_BOLD,
+        fontSize=12.5,
+        leading=15,
+        alignment=TA_CENTER,
+        spaceBefore=0,
+        spaceAfter=18
+    )
+
+    body_style = ParagraphStyle(
+        "Body",
+        fontName=FONT_NORMAL,
+        fontSize=12,
+        leading=16.2,
+        alignment=TA_JUSTIFY,
+        spaceBefore=0,
+        spaceAfter=11,
+        leftIndent=0,
+        rightIndent=0,
+        firstLineIndent=0
+    )
+
+    closing_style = ParagraphStyle(
+        "Closing",
+        parent=body_style,
+        alignment=TA_JUSTIFY,
+        spaceAfter=25
+    )
+
+    story = []
+
+    # Title
+    story.append(Paragraph("CERTIFICATE OF COMPLETION", title_style))
+
+    # Certificate ID
+    certificate_id = escape_text(student.get("certificate_id", "INT:APP26-27/0000-0000"))
+    story.append(Paragraph(certificate_id, certificate_id_style))
+
+    # To Whomsoever
+    story.append(Paragraph("TO WHOMSOEVER IT MAY CONCERN", heading_style))
+
+    # Student data
+    name = escape_text(student.get("full_name", ""))
+    register_number = escape_text(student.get("register_number", ""))
+    college = escape_text(student.get("college_name", ""))
+    degree = escape_text(student.get("degree_branch", ""))
+    mode = escape_text(str(student.get("mode", "Online")).strip().upper())
+    domain = escape_text(student.get("domain", ""))
+
+    # Paragraph 1
+    paragraph_1 = (
+        "This is to certify that "
+        f"<b>{name}</b>, "
+        f"<b>Reg. No: {register_number}</b>, "
+        "a student of "
+        f"<b>{college}</b>, "
+        f"pursuing {degree}, "
+        "has successfully completed an "
+        "Internship Program Through "
+        f"<b>{mode}</b> "
+        "at our organization in the domain of "
+        f"<b>{domain}</b>."
+    )
+    story.append(Paragraph(paragraph_1, body_style))
+
+    # Internship dates
+    start_date = format_certificate_date(student.get("internship_start_date"))
+    end_date = format_certificate_date(student.get("internship_end_date"))
+    paragraph_2 = (
+        "The internship was undertaken from "
+        f"<b>{escape_text(start_date)}</b> "
+        "to "
+        f"<b>{escape_text(end_date)}</b>."
+    )
+    story.append(Paragraph(paragraph_2, body_style))
+
+    # Project title
+    project_title = escape_text(student.get("project_title", ""))
+    paragraph_3 = (
+        "During the course of the internship, "
+        "the student exhibited commendable "
+        "professional behaviour and technical "
+        "proficiency, particularly in the project "
+        "titled “"
+        f"<b>{project_title}</b>"
+        "”."
+    )
+    story.append(Paragraph(paragraph_3, body_style))
+
+    # Closing
+    story.append(
+        Paragraph(
+            "We extend our best wishes to continue success in all future endeavors.",
+            closing_style
+        )
+    )
+
+    # QR Code
+    verify_token = student.get("uuid") or student.get("certificate_id") or "PENDING"
+    verification_url = f"{base_url.rstrip('/')}/verify/{verify_token}"
+
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_M,
+        box_size=6,
+        border=1
+    )
+    qr.add_data(verification_url)
+    qr.make(fit=True)
+    qr_img = qr.make_image(fill_color="#000000", back_color="#FFFFFF")
+    qr_buffer = io.BytesIO()
+    qr_img.save(qr_buffer, format="PNG")
+    qr_buffer.seek(0)
+
+    qr_image = RLImage(qr_buffer, width=1.05 * rl_inch, height=1.05 * rl_inch)
+    qr_text_style = ParagraphStyle(
+        "QRText",
+        fontName=FONT_NORMAL,
+        fontSize=8.5,
+        leading=10,
+        alignment=TA_CENTER,
+        textColor=colors.HexColor("#666666")
+    )
+    qr_text = Paragraph("Scan to Verify", qr_text_style)
+    qr_cell = [qr_image, Spacer(1, 3), qr_text]
+
+    # Signature
+    organization_style = ParagraphStyle(
+        "Organization",
+        fontName=FONT_NORMAL,
+        fontSize=12,
+        leading=15,
+        alignment=TA_RIGHT
+    )
+    signature_style = ParagraphStyle(
+        "Signature",
+        fontName=FONT_BOLD,
+        fontSize=12.5,
+        leading=15,
+        alignment=TA_RIGHT
+    )
+    signature_cell = [
+        Paragraph("For Approtech R&amp;D Solutions Pvt. Ltd.,", organization_style),
+        Spacer(1, 0.72 * rl_inch),
+        Paragraph("Authorized Signature", signature_style)
+    ]
+
+    footer_table = Table(
+        [[qr_cell, signature_cell]],
+        colWidths=[1.65 * rl_inch, CERTIFICATE_WIDTH - 1.65 * rl_inch],
+        hAlign="CENTER"
+    )
+    footer_table.setStyle(
+        TableStyle([
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 0),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+            ("TOPPADDING", (0, 0), (-1, -1), 0),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 0)
+        ])
+    )
+
+    centered_footer = Table(
+        [[footer_table]],
+        colWidths=[CERTIFICATE_WIDTH],
+        hAlign="CENTER"
+    )
+    centered_footer.setStyle(
+        TableStyle([
+            ("LEFTPADDING", (0, 0), (-1, -1), 0),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 0),
+            ("TOPPADDING", (0, 0), (-1, -1), 0),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 0)
+        ])
+    )
+    story.append(centered_footer)
+
+    doc.build(story)
+    output.seek(0)
+    return output
+
 def generate_certificate_docx(student, base_url):
     """Generates a genuine .docx certificate matching the uploaded PDF reference."""
     doc = Document()
@@ -345,10 +607,11 @@ def generate_certificate_docx(student, base_url):
     p1.paragraph_format.line_spacing = 1.35
 
     add_run(p1, "This is to certify that ")
-    add_run(p1, f"{student.get('full_name')}", bold=True)
-    add_run(p1, f" , (Reg. No: {student.get('register_number')}), a student of ")
-    add_run(p1, f"{student.get('college_name')}", bold=True)
-    add_run(p1, f" pursuing {student.get('degree_branch')}, has successfully completed an Internship Program Through ")
+    add_run(p1, f"{student.get('full_name')}, ", bold=True)
+    add_run(p1, f"Reg. No: {student.get('register_number')}, ", bold=True)
+    add_run(p1, "a student of ")
+    add_run(p1, f"{student.get('college_name')}, ", bold=True)
+    add_run(p1, f"pursuing {student.get('degree_branch')}, has successfully completed an Internship Program Through ")
     mode_text = str(student.get('mode', 'Online')).strip().upper()
     add_run(p1, mode_text, bold=True)
     add_run(p1, " at our organization in the domain of ")
@@ -1058,9 +1321,76 @@ def get_student_certificate(student_id):
     st['verification_url'] = f"{base_url}/verify/{verify_token}"
     st['qr_api_url'] = f"{base_url}/api/qr/{verify_token}"
     st['docx_url'] = f"{base_url}/api/students/{student_id}/download-docx"
+    st['pdf_url'] = f"{base_url}/api/students/{student_id}/download-pdf"
     st['company_name'] = 'Approtech R&D Solutions Pvt. Ltd.'
 
     return jsonify(st)
+
+@app.route('/api/students/<int:student_id>/download-pdf', methods=['GET'])
+@admin_required
+def download_student_pdf(student_id):
+    """Generates and serves official PDF certificate file for a student."""
+    conn = get_db()
+    cur = conn.cursor()
+    cur.execute('''
+        SELECT s.*, b.batch_code, b.batch_name
+        FROM students s
+        JOIN batches b ON s.batch_id = b.id
+        WHERE s.id = ?
+    ''', (student_id,))
+    student = cur.fetchone()
+    conn.close()
+
+    if not student:
+        return jsonify({'error': 'Student not found'}), 404
+
+    st = dict(student)
+    if not st.get('certificate_id'):
+        return jsonify({'error': 'Certificate has not been approved or generated yet'}), 400
+
+    base_url = request.host_url.rstrip('/')
+    buf = generate_certificate_pdf(st, base_url)
+    clean_id = (st.get('certificate_id') or 'CERT').replace(':', '_').replace('/', '_')
+    filename = f"Approtech_Certificate_{clean_id}.pdf"
+    return send_file(
+        buf,
+        as_attachment=True,
+        download_name=filename,
+        mimetype='application/pdf'
+    )
+
+@app.route('/download-pdf/<path:certificate_id>', methods=['GET'])
+def download_pdf_by_cert_id(certificate_id):
+    """Public direct PDF certificate download by Certificate ID or UUID."""
+    conn = get_db()
+    cur = conn.cursor()
+    clean_id = certificate_id.strip()
+    cur.execute('''
+        SELECT s.*, b.batch_code, b.batch_name
+        FROM students s
+        JOIN batches b ON s.batch_id = b.id
+        WHERE s.uuid = ? OR s.certificate_id = ?
+    ''', (clean_id, clean_id))
+    student = cur.fetchone()
+    conn.close()
+
+    if not student:
+        return render_template('verification.html', status='invalid', certificate_id=certificate_id), 404
+
+    st = dict(student)
+    if st.get('certificate_generated') != 1:
+        return render_template('verification.html', status='pending', certificate_id=certificate_id, student=st), 400
+
+    base_url = request.host_url.rstrip('/')
+    buf = generate_certificate_pdf(st, base_url)
+    clean_id = certificate_id.replace(':', '_').replace('/', '_')
+    filename = f"Approtech_Certificate_{clean_id}.pdf"
+    return send_file(
+        buf,
+        as_attachment=True,
+        download_name=filename,
+        mimetype='application/pdf'
+    )
 
 @app.route('/api/students/<int:student_id>/download-docx', methods=['GET'])
 @admin_required

@@ -130,7 +130,7 @@
             </div>
           </div>
 
-          <!-- PROJECT SECTION -->
+          <!-- Capstone Project Title -->
           <div class="verify-section">
             <div class="verify-section-title">
               <i class="fa-solid fa-diagram-project"></i>
@@ -142,6 +142,14 @@
                 <span class="value" style="font-size: 1.05rem; color: var(--primary);">{{ student.project_title }}</span>
               </div>
             </div>
+          </div>
+
+          <!-- DOWNLOAD CERTIFICATE ACTION -->
+          <div style="margin-top: 20px; margin-bottom: 8px; text-align: center;">
+            <a href="/download-pdf/{{ student.uuid or student.certificate_id }}" class="btn-primary" style="display: inline-flex; align-items: center; gap: 10px; padding: 12px 24px; font-size: 0.95rem; font-weight: 600; border-radius: 10px; text-decoration: none; box-shadow: 0 4px 14px rgba(37,99,235,0.25);">
+              <i class="fa-solid fa-file-pdf" style="font-size: 1.1rem;"></i>
+              <span>Download Official Certificate (PDF)</span>
+            </a>
           </div>
 
         </div>
