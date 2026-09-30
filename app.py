@@ -421,8 +421,8 @@ def generate_certificate_pdf(student, base_url):
     body_style = ParagraphStyle(
         "Body",
         fontName=FONT_NORMAL,
-        fontSize=12,
-        leading=16.2,
+        fontSize=14,
+        leading=18.5,
         alignment=TA_JUSTIFY,
         spaceBefore=0,
         spaceAfter=11,
@@ -539,7 +539,7 @@ def generate_certificate_pdf(student, base_url):
     organization_style = ParagraphStyle(
         "Organization",
         fontName=FONT_NORMAL,
-        fontSize=12,
+        fontSize=14,
         leading=15,
         alignment=TA_RIGHT
     )
@@ -623,7 +623,7 @@ def generate_certificate_docx(student, base_url):
     def add_run(p, text, bold=False):
         r = p.add_run(text)
         r.font.name = "Times New Roman"
-        r.font.size = Pt(12)
+        r.font.size = Pt(14)
         r.bold = bold
         return r
 
@@ -738,7 +738,7 @@ def generate_certificate_docx(student, base_url):
     p_for.paragraph_format.space_after = Pt(85)
     r_for = p_for.add_run("For Approtech R&D Solutions Pvt. Ltd.,")
     r_for.font.name = "Times New Roman"
-    r_for.font.size = Pt(12)
+    r_for.font.size = Pt(14)
 
     p_sign = cell_sig.add_paragraph()
     p_sign.alignment = WD_ALIGN_PARAGRAPH.RIGHT

@@ -12,7 +12,7 @@
   <!-- Google Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   
   <!-- Favicon & Brand Icons -->
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/favicon-32x32.png" />
@@ -22,254 +22,418 @@
   <link rel="manifest" href="/assets/site.webmanifest" />
   <meta name="theme-color" content="#2563EB" />
 
-  <link rel="stylesheet" href="/style.css" />
-</head>
-<body style="background: #F8FAFC;">
-  <!-- Background Glows -->
-  <div class="bg-grid-overlay" aria-hidden="true"></div>
-  <div class="bg-blob blob-1" aria-hidden="true"></div>
-  <div class="bg-blob blob-2" aria-hidden="true"></div>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  <div class="verify-page-wrapper">
-    <div class="verify-card">
-      
-      <!-- Top Brand Header -->
-      <div class="verify-header">
-        <img src="/assets/approtech-icon.png" alt="Approtech Logo" class="verify-logo" />
-        <h1>APPROTECH</h1>
-        <p>Official Internship Certificate Verification Portal</p>
+    body {
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #F8FAFC;
+      background-image: radial-gradient(#CBD5E1 1px, transparent 1px);
+      background-size: 24px 24px;
+      color: #0F172A;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+    }
+
+    .verification-card {
+      width: 100%;
+      max-width: 440px;
+      background: #FFFFFF;
+      border-radius: 18px;
+      box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.1), 0 4px 12px -2px rgba(15, 23, 42, 0.05);
+      border: 1px solid #E2E8F0;
+      overflow: hidden;
+    }
+
+    /* TOP BLUE BANNER */
+    .card-header-banner {
+      background: linear-gradient(135deg, #1E40AF 0%, #1D4ED8 100%);
+      color: #FFFFFF;
+      padding: 24px 20px 20px 20px;
+      text-align: center;
+    }
+
+    .header-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      opacity: 0.92;
+      margin-bottom: 6px;
+    }
+
+    .header-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.55rem;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      margin: 2px 0;
+      color: #FFFFFF;
+    }
+
+    .header-sub {
+      font-size: 0.82rem;
+      opacity: 0.88;
+    }
+
+    /* VERIFIED GREEN STRIP */
+    .verified-banner {
+      background: #ECFDF5;
+      border-top: 1px solid #D1FAE5;
+      border-bottom: 1px solid #D1FAE5;
+      padding: 10px 16px;
+      text-align: center;
+      color: #059669;
+      font-weight: 700;
+      font-size: 0.92rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .verified-banner.invalid {
+      background: #FEF2F2;
+      border-color: #FEE2E2;
+      color: #DC2626;
+    }
+
+    .verified-banner.pending {
+      background: #FFFBEB;
+      border-color: #FDE68A;
+      color: #B45309;
+    }
+
+    /* CARD BODY */
+    .card-body {
+      padding: 24px 26px 14px 26px;
+    }
+
+    .issued-to-label {
+      text-align: center;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      color: #94A3B8;
+      text-transform: uppercase;
+      margin-bottom: 4px;
+    }
+
+    .student-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #0F172A;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .card-divider {
+      height: 1px;
+      background: #E2E8F0;
+      margin: 16px 0;
+    }
+
+    /* DETAILS LIST */
+    .details-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .detail-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .detail-icon {
+      font-size: 1.05rem;
+      color: #2563EB;
+      width: 22px;
+      text-align: center;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+
+    .detail-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .detail-label {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #64748B;
+      margin-bottom: 2px;
+    }
+
+    .detail-value {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #0F172A;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    /* FOOTER */
+    .card-footer {
+      padding: 16px 26px 22px 26px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .authentic-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .authentic-icon-box {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #DCFCE7;
+      color: #16A34A;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+
+    .authentic-icon-box.invalid {
+      background: #FEE2E2;
+      color: #DC2626;
+    }
+
+    .authentic-icon-box.pending {
+      background: #FEF3C7;
+      color: #D97706;
+    }
+
+    .authentic-text strong {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #0F172A;
+      line-height: 1.2;
+    }
+
+    .authentic-text span {
+      display: block;
+      font-size: 0.72rem;
+      color: #64748B;
+      margin-top: 1px;
+    }
+
+    .status-group {
+      text-align: right;
+    }
+
+    .status-label {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      color: #94A3B8;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .status-badge {
+      display: inline-block;
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      background: #DCFCE7;
+      color: #15803D;
+      padding: 3px 10px;
+      border-radius: 9999px;
+    }
+
+    .status-badge.invalid {
+      background: #FEE2E2;
+      color: #DC2626;
+    }
+
+    .status-badge.pending {
+      background: #FEF3C7;
+      color: #B45309;
+    }
+
+    .not-found-desc {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #64748B;
+      padding: 18px 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="verification-card">
+    
+    <!-- TOP BLUE BANNER -->
+    <header class="card-header-banner">
+      <div class="header-badge">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>OFFICIAL VERIFICATION</span>
+      </div>
+      <h1 class="header-title">APPROTECH</h1>
+      <div class="header-sub">R&D Solutions Pvt. Ltd.</div>
+    </header>
+
+    {% if status == 'verified' and student %}
+      <!-- GREEN VERIFIED BANNER -->
+      <div class="verified-banner">
+        <i class="fa-solid fa-circle-check"></i>
+        <span>Certificate Verified</span>
       </div>
 
-      {% if status == 'verified' %}
-        <!-- 1. VERIFIED CERTIFICATE STATE -->
-        <div class="status-banner verified">
-          <div class="status-banner-icon">
+      <!-- CARD BODY -->
+      <div class="card-body">
+        <div class="issued-to-label">ISSUED TO</div>
+        <h2 class="student-name">{{ student.full_name }}</h2>
+
+        <div class="card-divider"></div>
+
+        <!-- 4 DETAILS ITEMS ONLY (NO PROJECT TITLE, NO DOWNLOAD BUTTON) -->
+        <div class="details-list">
+          <div class="detail-item">
+            <i class="fa-solid fa-graduation-cap detail-icon"></i>
+            <div class="detail-content">
+              <div class="detail-label">College</div>
+              <div class="detail-value">{{ student.college_name }}</div>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <i class="fa-solid fa-book-open detail-icon"></i>
+            <div class="detail-content">
+              <div class="detail-label">Domain</div>
+              <div class="detail-value">{{ student.domain }}</div>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <i class="fa-regular fa-calendar detail-icon"></i>
+            <div class="detail-content">
+              <div class="detail-label">Internship Start Date</div>
+              <div class="detail-value">{{ student.formatted_start_date or student.internship_start_date }}</div>
+            </div>
+          </div>
+
+          <div class="detail-item">
+            <i class="fa-regular fa-calendar detail-icon"></i>
+            <div class="detail-content">
+              <div class="detail-label">Internship End Date</div>
+              <div class="detail-value">{{ student.formatted_end_date or student.internship_end_date }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-divider"></div>
+      </div>
+
+      <!-- FOOTER -->
+      <footer class="card-footer">
+        <div class="authentic-info">
+          <div class="authentic-icon-box">
             <i class="fa-solid fa-circle-check"></i>
           </div>
-          <div class="status-banner-text">
-            <h2>✓ VERIFIED CERTIFICATE</h2>
-            <p>This certificate has been successfully verified against the official Approtech database records.</p>
+          <div class="authentic-text">
+            <strong>Authentic Certificate</strong>
+            <span>Approtech R&D Solutions</span>
           </div>
         </div>
 
-        <div class="verify-body">
-          <!-- Certificate ID Meta Box -->
-          <div class="verify-meta-box">
-            <div>
-              <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--muted); font-weight: 700; margin-bottom: 2px;">
-                Certificate ID
-              </div>
-              <div class="cert-id-tag">{{ student.certificate_id or certificate_id }}</div>
-            </div>
-            <div style="text-align: right; display: flex; align-items: center; gap: 10px;">
-              <span class="status-badge generated">
-                <i class="fa-solid fa-check-double"></i> Verified & Active
-              </span>
-            </div>
-          </div>
-
-          <!-- STUDENT SECTION -->
-          <div class="verify-section">
-            <div class="verify-section-title">
-              <i class="fa-solid fa-user-graduate"></i>
-              <span>Student Details</span>
-            </div>
-            <div class="verify-grid">
-              <div class="verify-row">
-                <span class="label">Full Name</span>
-                <span class="value">{{ student.full_name }}</span>
-              </div>
-              <div class="verify-row">
-                <span class="label">Register Number</span>
-                <span class="value" style="font-family: monospace;">{{ student.register_number }}</span>
-              </div>
-              <div class="verify-row full">
-                <span class="label">Institution / College</span>
-                <span class="value">{{ student.college_name }}</span>
-              </div>
-              <div class="verify-row">
-                <span class="label">Degree & Branch</span>
-                <span class="value">{{ student.degree_branch }}</span>
-              </div>
-              <div class="verify-row">
-                <span class="label">State</span>
-                <span class="value">{{ student.state or 'India' }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- INTERNSHIP SECTION -->
-          <div class="verify-section">
-            <div class="verify-section-title">
-              <i class="fa-solid fa-briefcase"></i>
-              <span>Internship Details</span>
-            </div>
-            <div class="verify-grid">
-              <div class="verify-row">
-                <span class="label">Organization</span>
-                <span class="value">Approtech (Batch {{ student.batch_code }})</span>
-              </div>
-              <div class="verify-row">
-                <span class="label">Domain</span>
-                <span class="value">{{ student.domain }}</span>
-              </div>
-              <div class="verify-row">
-                <span class="label">Internship Mode</span>
-                <span class="value">
-                  <span class="mode-badge-pill {{ 'online' if student.mode == 'Online' else 'offline' }}">{{ student.mode }}</span>
-                </span>
-              </div>
-              <div class="verify-row">
-                <span class="label">Internship Tenure</span>
-                <span class="value">{{ student.formatted_start_date or student.internship_start_date }} to {{ student.formatted_end_date or student.internship_end_date }}</span>
-              </div>
-              <div class="verify-row full">
-                <span class="label">Total Internship Duration</span>
-                <span class="value" style="color: var(--accent); font-weight: 700;">{{ duration }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- Capstone Project Title -->
-          <div class="verify-section">
-            <div class="verify-section-title">
-              <i class="fa-solid fa-diagram-project"></i>
-              <span>Project Details</span>
-            </div>
-            <div class="verify-grid">
-              <div class="verify-row full">
-                <span class="label">Capstone Project Title</span>
-                <span class="value" style="font-size: 1.05rem; color: var(--primary);">{{ student.project_title }}</span>
-              </div>
-            </div>
-          </div>
-
-          <!-- DOWNLOAD CERTIFICATE ACTION -->
-          <div style="margin-top: 20px; margin-bottom: 8px; text-align: center;">
-            <a href="/download-pdf/{{ student.uuid or student.certificate_id }}" class="btn-primary" style="display: inline-flex; align-items: center; gap: 10px; padding: 12px 24px; font-size: 0.95rem; font-weight: 600; border-radius: 10px; text-decoration: none; box-shadow: 0 4px 14px rgba(37,99,235,0.25);">
-              <i class="fa-solid fa-file-pdf" style="font-size: 1.1rem;"></i>
-              <span>Download Official Certificate (PDF)</span>
-            </a>
-          </div>
-
+        <div class="status-group">
+          <span class="status-label">Status</span>
+          <span class="status-badge">VALID</span>
         </div>
+      </footer>
 
-        <div class="verify-footer">
-          <div class="verify-badge-pill">
-            <i class="fa-solid fa-shield-check"></i>
-            <span>Official Approtech Verified Record</span>
+    {% elif status == 'pending' %}
+      <div class="verified-banner pending">
+        <i class="fa-solid fa-hourglass-half"></i>
+        <span>Pending Approval</span>
+      </div>
+
+      <div class="card-body">
+        <div class="issued-to-label">CERTIFICATE STATUS</div>
+        <h2 class="student-name">Under Review</h2>
+        <div class="card-divider"></div>
+        <p class="not-found-desc">
+          This certificate application is currently under review by Approtech administrators. Certificate ID: <strong>{{ certificate_id }}</strong>
+        </p>
+        <div class="card-divider"></div>
+      </div>
+
+      <footer class="card-footer">
+        <div class="authentic-info">
+          <div class="authentic-icon-box pending">
+            <i class="fa-solid fa-clock"></i>
           </div>
-          <div style="font-size: 0.78rem; color: var(--muted);">
-            Approved on: {{ student.approved_at or student.submitted_at }}
+          <div class="authentic-text">
+            <strong>Pending Record</strong>
+            <span>Approtech R&D Solutions</span>
           </div>
         </div>
 
-      {% elif status == 'pending' %}
-        <!-- 2. PENDING STATE -->
-        <div class="status-banner pending">
-          <div class="status-banner-icon">
-            <i class="fa-solid fa-hourglass-half"></i>
-          </div>
-          <div class="status-banner-text">
-            <h2>Certificate Pending Review</h2>
-            <p>This internship submission is currently under review by Approtech administrators. The certificate has not yet been generated.</p>
-          </div>
+        <div class="status-group">
+          <span class="status-label">Status</span>
+          <span class="status-badge pending">PENDING</span>
         </div>
+      </footer>
 
-        <div class="verify-body">
-          <div class="verify-meta-box">
-            <div>
-              <div style="font-size: 0.72rem; text-transform: uppercase; color: var(--muted); font-weight: 700;">Certificate ID</div>
-              <div class="cert-id-tag">{{ certificate_id }}</div>
-            </div>
-            <span class="status-badge pending">
-              <i class="fa-solid fa-clock"></i> Pending Approval
-            </span>
+    {% else %}
+      <!-- INVALID / NOT FOUND STATE -->
+      <div class="verified-banner invalid">
+        <i class="fa-solid fa-circle-xmark"></i>
+        <span>Verification Failed</span>
+      </div>
+
+      <div class="card-body">
+        <div class="issued-to-label">CERTIFICATE STATUS</div>
+        <h2 class="student-name">Record Not Found</h2>
+        <div class="card-divider"></div>
+        <p class="not-found-desc">
+          {{ error_message or "The specified certificate could not be verified in our records. Please verify the QR code or Certificate ID." }}
+        </p>
+        <div class="card-divider"></div>
+      </div>
+
+      <footer class="card-footer">
+        <div class="authentic-info">
+          <div class="authentic-icon-box invalid">
+            <i class="fa-solid fa-triangle-exclamation"></i>
           </div>
-
-          <div class="verify-section">
-            <div class="verify-section-title">
-              <i class="fa-solid fa-user"></i>
-              <span>Student Submission Information</span>
-            </div>
-            <div class="verify-grid">
-              <div class="verify-row">
-                <span class="label">Student Name</span>
-                <span class="value">{{ student.full_name }}</span>
-              </div>
-              <div class="verify-row">
-                <span class="label">Batch</span>
-                <span class="value">{{ student.batch_code }}</span>
-              </div>
-              <div class="verify-row full">
-                <span class="label">College</span>
-                <span class="value">{{ student.college_name }}</span>
-              </div>
-            </div>
+          <div class="authentic-text">
+            <strong>Unverified Record</strong>
+            <span>Approtech R&D Solutions</span>
           </div>
         </div>
 
-        <div class="verify-footer">
-          <a href="/" style="color: var(--accent); font-size: 0.85rem; font-weight: 600; text-decoration: none;">
-            <i class="fa-solid fa-arrow-left"></i> Return to Admin
-          </a>
+        <div class="status-group">
+          <span class="status-label">Status</span>
+          <span class="status-badge invalid">INVALID</span>
         </div>
+      </footer>
+    {% endif %}
 
-      {% elif status == 'archived' %}
-        <!-- 3. ARCHIVED STATE -->
-        <div class="status-banner archived">
-          <div class="status-banner-icon">
-            <i class="fa-solid fa-box-archive"></i>
-          </div>
-          <div class="status-banner-text">
-            <h2>Record Inactive or Archived</h2>
-            <p>This internship certificate record is archived or no longer listed in active Approtech records.</p>
-          </div>
-        </div>
-
-        <div class="verify-body" style="text-align: center; padding: 36px 20px;">
-          <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 20px;">If you believe this is an error, please contact Approtech support with your Certificate ID: <strong>{{ certificate_id }}</strong>.</p>
-          <a href="/" class="btn-primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
-            <i class="fa-solid fa-home"></i> Approtech Home
-          </a>
-        </div>
-
-      {% else %}
-        <!-- 4. INVALID / NOT FOUND STATE -->
-        <div class="status-banner invalid">
-          <div class="status-banner-icon">
-            <i class="fa-solid fa-circle-xmark"></i>
-          </div>
-          <div class="status-banner-text">
-            <h2>{% if error_message %}Verification Rate Limited{% else %}Certificate Not Found{% endif %}</h2>
-            <p>{% if error_message %}{{ error_message }}{% else %}We could not find any official Approtech certificate matching the provided identifier: <strong>{{ certificate_id }}</strong>.{% endif %}</p>
-          </div>
-        </div>
-
-        <div class="verify-body">
-          <p style="font-size: 0.9rem; color: var(--muted); margin-bottom: 20px;">
-            Please ensure that you scanned the official QR code or entered the exact Certificate ID (format: <code>INT:APP26-27/XXXX-XXXX</code>).
-          </p>
-
-          <form onsubmit="event.preventDefault(); const id = document.getElementById('search-cert-id').value.trim(); if(id) window.location.href='/verify/' + encodeURIComponent(id);">
-            <div style="display: flex; gap: 8px;">
-              <input type="text" id="search-cert-id" placeholder="Enter Certificate ID or Verification Token..." class="form-input" style="flex:1;" required />
-              <button type="submit" class="btn-primary" style="padding: 0 20px;">
-                <i class="fa-solid fa-magnifying-glass"></i> Verify
-              </button>
-            </div>
-          </form>
-        </div>
-
-        <div class="verify-footer">
-          <a href="/" style="color: var(--accent); font-size: 0.85rem; font-weight: 600; text-decoration: none;">
-            <i class="fa-solid fa-arrow-left"></i> Return to Admin
-          </a>
-        </div>
-
-      {% endif %}
-
-    </div>
   </div>
+
 </body>
 </html>
