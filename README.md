@@ -16,14 +16,6 @@ ISO 9001:2015 Certified Certificate Generation, Issuance & Verification Portal.
 
 ---
 
-## 🔐 Administrative Credentials
-
-- 
-
-*(Configurable via environment variables `ADMIN_USER` and `ADMIN_PASSWORD`)*
-
----
-
 ## 🛡️ Security Features
 
 - **Mandatory Endpoint Authentication**: All `/api/batches` and `/api/students` administration endpoints are guarded by `@admin_required` (HTTP 401 Unauthorized for unauthenticated calls).
