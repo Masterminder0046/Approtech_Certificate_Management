@@ -18,8 +18,7 @@ ISO 9001:2015 Certified Certificate Generation, Issuance & Verification Portal.
 
 ## 🔐 Administrative Credentials
 
-- **Username**: `admin`
-- **Password**: `admin@approtech2026`
+- 
 
 *(Configurable via environment variables `ADMIN_USER` and `ADMIN_PASSWORD`)*
 
