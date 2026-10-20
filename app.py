@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Approtech Internship Certificate Management System
-Backend: Python 3 + Flask + native SQLite3
+Backend: Python 3 + Flask + SQLite3 (local) / Turso libSQL (production)
 """
 
 import os
@@ -70,18 +70,233 @@ except Exception:
     FONT_BOLD = "Times-Bold"
 
 
-# Serverless (Vercel) / Read-only environment SQLite support
-if os.environ.get('VERCEL') or not os.access(os.path.dirname(os.path.abspath(__file__)), os.W_OK):
-    TEMP_DB = '/tmp/database.db'
-    SRC_DB = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.db')
-    if not os.path.exists(TEMP_DB) and os.path.exists(SRC_DB):
+# ---------------------------------------------------------------------------
+# DATABASE BACKEND SELECTION (SQLite local / Turso Cloud libSQL over HTTP)
+# ---------------------------------------------------------------------------
+# When TURSO_DATABASE_URL and TURSO_AUTH_TOKEN are set (Vercel production),
+# use Turso's official HTTP pipeline API.
+# This requires ZERO native C binary packages and works seamlessly on serverless.
+# Otherwise falls back to local SQLite3 (development / self-hosted).
+
+import json
+import urllib.request
+import urllib.error
+import base64
+
+TURSO_DATABASE_URL = os.environ.get('TURSO_DATABASE_URL', '')
+TURSO_AUTH_TOKEN   = os.environ.get('TURSO_AUTH_TOKEN', '')
+USE_TURSO = bool(TURSO_DATABASE_URL and TURSO_AUTH_TOKEN)
+
+class TursoRow:
+    """Drop-in replacement for sqlite3.Row supporting dict and index access."""
+    __slots__ = ('_cols', '_vals', '_dict')
+
+    def __init__(self, cols, vals):
+        self._cols = list(cols)
+        self._vals = list(vals)
+        self._dict = dict(zip(cols, vals))
+
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            return self._vals[key]
+        return self._dict[key]
+
+    def keys(self):
+        return self._cols
+
+    def get(self, key, default=None):
+        return self._dict.get(key, default)
+
+    def __iter__(self):
+        return iter(self._vals)
+
+    def __len__(self):
+        return len(self._vals)
+
+    def __contains__(self, key):
+        return key in self._dict
+
+    def __repr__(self):
+        return f"<TursoRow {self._dict}>"
+
+
+class TursoHTTPClient:
+    """Lightweight HTTP client for Turso / libSQL Hrana pipeline API."""
+    def __init__(self, url, auth_token):
+        clean_url = url.strip()
+        if clean_url.startswith("libsql://"):
+            clean_url = "https://" + clean_url[len("libsql://"):]
+        elif clean_url.startswith("ws://") or clean_url.startswith("http://"):
+            clean_url = "https://" + clean_url.split("://", 1)[1]
+        elif clean_url.startswith("wss://"):
+            clean_url = "https://" + clean_url[len("wss://"):]
+        if not clean_url.endswith("/v2/pipeline"):
+            clean_url = clean_url.rstrip("/") + "/v2/pipeline"
+        self.endpoint = clean_url
+        self.auth_token = auth_token.strip()
+
+    def _convert_arg(self, arg):
+        if arg is None:
+            return {"type": "null"}
+        if isinstance(arg, bool):
+            return {"type": "integer", "value": str(1 if arg else 0)}
+        if isinstance(arg, int):
+            return {"type": "integer", "value": str(arg)}
+        if isinstance(arg, float):
+            return {"type": "float", "value": arg}
+        if isinstance(arg, (bytes, bytearray)):
+            return {"type": "blob", "base64": base64.b64encode(arg).decode('ascii')}
+        return {"type": "text", "value": str(arg)}
+
+    def _convert_cell(self, cell):
+        if not isinstance(cell, dict):
+            return cell
+        t = cell.get("type")
+        if t == "null":
+            return None
+        if t == "integer":
+            try:
+                return int(cell.get("value", 0))
+            except Exception:
+                return cell.get("value")
+        if t == "float":
+            try:
+                return float(cell.get("value", 0.0))
+            except Exception:
+                return cell.get("value")
+        if t == "blob":
+            try:
+                return base64.b64decode(cell.get("base64", ""))
+            except Exception:
+                return cell.get("base64")
+        return cell.get("value")
+
+    def execute(self, sql, params=()):
+        args = [self._convert_arg(a) for a in params]
+        payload = {
+            "requests": [
+                {
+                    "type": "execute",
+                    "stmt": {
+                        "sql": sql,
+                        "args": args
+                    }
+                },
+                {"type": "close"}
+            ]
+        }
+        data = json.dumps(payload).encode("utf-8")
+        headers = {
+            "Authorization": f"Bearer {self.auth_token}",
+            "Content-Type": "application/json"
+        }
+        req = urllib.request.Request(self.endpoint, data=data, headers=headers, method="POST")
         try:
-            shutil.copy2(SRC_DB, TEMP_DB)
-        except Exception:
-            pass
-    DB_PATH = TEMP_DB if os.path.exists(TEMP_DB) else SRC_DB
+            with urllib.request.urlopen(req, timeout=15) as resp:
+                resp_data = json.loads(resp.read().decode("utf-8"))
+        except urllib.error.HTTPError as e:
+            err_body = e.read().decode("utf-8", errors="replace")
+            raise Exception(f"Turso HTTP error {e.code}: {err_body}")
+        except Exception as e:
+            raise Exception(f"Turso connection failed: {e}")
+
+        results = resp_data.get("results", [])
+        if not results:
+            return [], [], None, 0
+
+        first = results[0]
+        if first.get("type") == "error":
+            err_info = first.get("error", {})
+            raise Exception(f"Turso query error: {err_info.get('message', str(err_info))}")
+
+        exec_res = first.get("response", {}).get("result", {})
+        cols = [c["name"] for c in exec_res.get("cols", [])]
+        raw_rows = exec_res.get("rows", [])
+        rows = []
+        for r in raw_rows:
+            parsed_cells = [self._convert_cell(cell) for cell in r]
+            rows.append(TursoRow(cols, parsed_cells))
+
+        last_insert_id = exec_res.get("last_insert_rowid")
+        if last_insert_id is not None:
+            try:
+                last_insert_id = int(last_insert_id)
+            except Exception:
+                pass
+        affected = exec_res.get("affected_row_count", 0)
+        return cols, rows, last_insert_id, affected
+
+
+class _TursoCursor:
+    def __init__(self, client):
+        self._client = client
+        self._rows = []
+        self._pos = 0
+        self.lastrowid = None
+        self.rowcount = -1
+        self.description = None
+
+    def execute(self, sql, params=()):
+        cols, rows, last_id, affected = self._client.execute(sql, params)
+        self._rows = rows
+        self._pos = 0
+        self.lastrowid = last_id
+        self.rowcount = affected if affected is not None else len(rows)
+        self.description = [(c, None, None, None, None, None, None) for c in cols]
+        return self
+
+    def fetchone(self):
+        if self._pos < len(self._rows):
+            row = self._rows[self._pos]
+            self._pos += 1
+            return row
+        return None
+
+    def fetchall(self):
+        rows = self._rows[self._pos:]
+        self._pos = len(self._rows)
+        return rows
+
+    def __iter__(self):
+        return iter(self._rows)
+
+
+class _TursoConnection:
+    def __init__(self, client):
+        self._client = client
+
+    def cursor(self):
+        return _TursoCursor(self._client)
+
+    def execute(self, sql, params=()):
+        cur = self.cursor()
+        cur.execute(sql, params)
+        return cur
+
+    def commit(self):
+        pass
+
+    def close(self):
+        pass
+
+
+if USE_TURSO:
+    _turso_client = TursoHTTPClient(TURSO_DATABASE_URL, TURSO_AUTH_TOKEN)
+    DB_PATH = None
 else:
-    DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.db')
+    _turso_client = None
+    if os.environ.get('VERCEL') or not os.access(os.path.dirname(os.path.abspath(__file__)), os.W_OK):
+        TEMP_DB = '/tmp/database.db'
+        SRC_DB = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.db')
+        if not os.path.exists(TEMP_DB) and os.path.exists(SRC_DB):
+            try:
+                shutil.copy2(SRC_DB, TEMP_DB)
+            except Exception:
+                pass
+        DB_PATH = TEMP_DB if os.path.exists(TEMP_DB) else SRC_DB
+    else:
+        DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'database.db')
+
 
 app = Flask(
     __name__,
@@ -193,16 +408,20 @@ def add_security_headers(response):
 # ---------------------------------------------------------------------------
 
 def get_db():
+    """Returns a database connection — Turso in production, SQLite locally."""
+    if USE_TURSO:
+        return _TursoConnection(_turso_client)
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
 
 def init_db():
     """Initializes the database without dropping existing tables or data."""
-    try:
-        os.makedirs(os.path.dirname(os.path.abspath(DB_PATH)), exist_ok=True)
-    except Exception:
-        pass
+    if not USE_TURSO:
+        try:
+            os.makedirs(os.path.dirname(os.path.abspath(DB_PATH)), exist_ok=True)
+        except Exception:
+            pass
     conn = get_db()
     cur = conn.cursor()
 
